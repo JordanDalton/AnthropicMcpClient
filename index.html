@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MCP SSE Client - Chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg-color: #f7f7f8;
+            --sidebar-bg: #ffffff;
+            --main-bg: #ffffff;
+            --chat-history-bg: #ffffff; /* Use main bg for chat area */
+            --input-bg: #ffffff;
+            --message-user-bg: #eef2ff; /* Lighter indigo for user messages */
+            --message-ai-bg: #f9fafb;  /* Very light grey for AI messages */
+            --text-color: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --accent-color: #4f46e5;
+            --accent-hover-color: #4338ca;
+            --disabled-color: #d1d5db;
+            --code-bg: #f3f4f6;
+            --error-color: #dc2626; /* Red for errors */
+            --error-text-color: #991b1b; /* Darker red text for errors */
+            --error-bg-subtle: #fee2e2; /* Light red background for error messages */
+            --toggle-btn-bg: var(--accent-color);
+            --toggle-btn-hover-bg: var(--accent-hover-color);
+
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            --font-mono: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+
+            --border-radius-sm: 4px;
+            --border-radius-md: 6px;
+            --border-radius-lg: 8px;
+            --sidebar-width: 35%; /* Define sidebar width as a variable */
+            --sidebar-min-width: 280px;
+            --sidebar-max-width: 450px;
+        }
+
+        html { box-sizing: border-box; }
+        *, *:before, *:after { box-sizing: inherit; }
+
+        body {
+            font-family: var(--font-sans);
+            display: flex;
+            height: 100vh; /* Use full viewport height */
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 12px;
+            /* Gap is only applied when sidebar is visible */
+            /* gap: 12px; */
+            transition: gap 0.3s ease; /* Smooth transition for gap */
+        }
+
+        /* Sidebar Styles */
+        #sidebar {
+            /* HIDDEN BY DEFAULT */
+            display: none;
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-min-width);
+            max-width: var(--sidebar-max-width);
+            background-color: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 0;
+            overflow: hidden;
+            flex-direction: column;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            flex-shrink: 0; /* Prevent sidebar from shrinking unexpectedly */
+        }
+
+         /* State when sidebar should be visible */
+        body.sidebar-visible {
+            gap: 12px; /* Apply gap when sidebar is shown */
+        }
+        body.sidebar-visible #sidebar {
+            display: flex; /* Show the sidebar */
+        }
+
+
+         #sidebar h2 {
+             margin: 0;
+             padding: 16px 20px;
+             font-size: 1.15em;
+             font-weight: 600;
+             border-bottom: 1px solid var(--border-color);
+             flex-shrink: 0;
+         }
+
+         #eventLogContainer {
+             padding: 16px 20px;
+             overflow-y: auto;
+             flex-grow: 1;
+         }
+
+        /* Main Content Styles */
+        #main {
+            flex-grow: 1; /* Takes remaining space */
+            background-color: var(--main-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            /* Allow main content to smoothly transition its width if needed, although flex handles it */
+             transition: width 0.3s ease;
+        }
+
+        #chatHistory {
+            flex-grow: 1;
+            background-color: var(--chat-history-bg);
+            padding: 16px 20px;
+            overflow-y: auto;
+            line-height: 1.7;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Message Styles (Unchanged) */
+        .message { padding: 10px 14px; border-radius: var(--border-radius-lg); max-width: 85%; word-wrap: break-word; white-space: pre-wrap; }
+        .message-user { background-color: var(--message-user-bg); color: #3730a3; align-self: flex-end; border-bottom-right-radius: var(--border-radius-sm); }
+        .message-ai { background-color: var(--message-ai-bg); border: 1px solid var(--border-color); align-self: flex-start; border-bottom-left-radius: var(--border-radius-sm); }
+        .message-error { background-color: var(--error-bg-subtle); color: var(--error-text-color); border: 1px solid var(--error-color); align-self: stretch; max-width: 100%; font-size: 0.95em; }
+        .message-error strong { color: var(--error-color); }
+        .message code { font-family: var(--font-mono); background-color: rgba(0,0,0,0.05); padding: 0.2em 0.4em; border-radius: var(--border-radius-sm); font-size: 0.9em; }
+        .message pre { font-family: var(--font-mono); background-color: var(--code-bg); padding: 12px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); overflow-x: auto; font-size: 0.9em; line-height: 1.5; margin: 8px 0; }
+        .message-ai pre { background-color: #e5e7eb; }
+
+        /* Input Area Styles (Unchanged) */
+        #inputArea { display: flex; gap: 10px; padding: 12px 20px; align-items: flex-end; background-color: var(--input-bg); border-top: 1px solid var(--border-color); flex-shrink: 0; }
+        #queryInput { flex-grow: 1; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); font-family: inherit; font-size: 1em; line-height: 1.5; background-color: #fff; color: var(--text-color); transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; resize: none; overflow-y: hidden; min-height: calc(1.5em + 20px + 2px); max-height: 200px; overflow-wrap: break-word; }
+        #queryInput:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2); }
+        #queryInput::placeholder { color: var(--text-muted); opacity: 1; }
+        #sendButton { padding: 10px 18px; border: none; background-color: var(--accent-color); color: white; border-radius: var(--border-radius-md); cursor: pointer; font-size: 1em; font-weight: 500; transition: background-color 0.2s ease-in-out; white-space: nowrap; height: calc(1.5em + 20px + 2px); align-self: flex-end; }
+        #sendButton:disabled { background-color: var(--disabled-color); color: var(--text-muted); cursor: not-allowed; }
+        #sendButton:not(:disabled):hover { background-color: var(--accent-hover-color); }
+
+        /* Event Log Styles (Unchanged) */
+        #eventLog { list-style-type: none; padding: 0; margin: 0; }
+        #eventLog li { margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; word-break: break-word; }
+        #eventLog li:last-child { border-bottom: none; margin-bottom: 0; }
+        .event-type { font-weight: 600; color: var(--accent-color); display: block; margin-bottom: 4px; font-size: 0.9em; text-transform: capitalize; }
+        .event-data { font-family: var(--font-mono); font-size: 0.85em; background-color: var(--code-bg); padding: 8px 10px; border-radius: var(--border-radius-md); border: 1px solid #e5e7eb; display: block; white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; color: #374151; line-height: 1.5; }
+        .event-type.client-status, .event-type.status { color: var(--text-muted); }
+        .event-type.error, .event-type.client-error, .event-type.parse-error, .event-type.send-error, .event-type.network-error, .event-type.tool-connection-failed { color: var(--error-color); }
+
+        /* Scrollbar Styling (Unchanged) */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background-color: var(--disabled-color); border-radius: 4px; border: 2px solid var(--bg-color); }
+        ::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted); }
+
+        /* Toggle Button Style */
+        #toggleSidebarButton {
+            position: fixed;
+            top: 18px; /* Align with body padding + a bit */
+            right: 18px;
+            z-index: 1000; /* Ensure it's above other content */
+            padding: 8px 10px;
+            background-color: var(--toggle-btn-bg);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            font-size: 1.2em; /* Adjust size of emoji/icon */
+            line-height: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        #toggleSidebarButton:hover {
+            background-color: var(--toggle-btn-hover-bg);
+        }
+         #toggleSidebarButton:active {
+             transform: scale(0.95);
+         }
+
+    </style>
+</head>
+<body>
+    <!-- The new Toggle Button -->
+    <button id="toggleSidebarButton" title="Toggle Event Log">📄</button>
+
+    <!-- Existing Layout Structure -->
+    <div id="sidebar">
+        <h2>Event Log</h2>
+        <div id="eventLogContainer">
+            <ul id="eventLog"></ul>
+        </div>
+    </div>
+    <div id="main">
+        <div id="chatHistory"></div>
+        <div id="inputArea">
+            <textarea id="queryInput" placeholder="Enter your query (Shift+Enter for new line)..." rows="1" disabled></textarea>
+            <button id="sendButton" disabled>Send</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Existing Variables ---
+        let clientId = null;
+        const eventLog = document.getElementById('eventLog');
+        const queryInput = document.getElementById('queryInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatHistory = document.getElementById('chatHistory');
+        const SERVER_URL = 'http://localhost:3005';
+        let eventSource = null;
+        let toolsAreReady = false;
+        let currentAiMessageDiv = null;
+
+        // --- NEW Elements for Toggle ---
+        const toggleSidebarButton = document.getElementById('toggleSidebarButton');
+        const bodyElement = document.body;
+
+
+        // --- Existing Utility Functions (Unchanged) ---
+        function escapeHtml(unsafe) { /* ... */ }
+        function adjustTextareaHeight() { /* ... */ }
+        function scrollChatToBottom() { /* ... */ }
+        function addMessageToChat(content, senderClass) { /* ... */ }
+        function appendToMessage(div, textChunk) { /* ... */ }
+
+        // --- Event Logging (Sidebar) ---
+        function logEvent(type, data) {
+            // Log to sidebar (Functionality unchanged, just ensures container exists)
+            const item = document.createElement('li');
+            let dataString;
+            try { dataString = (typeof data === 'object' && data !== null) ? JSON.stringify(data, null, 2) : String(data); }
+            catch (e) { dataString = String(data); }
+            const safeType = escapeHtml(type);
+            const safeDataString = escapeHtml(dataString);
+            const typeClass = `event-type ${safeType.toLowerCase().replace(/_/g, '-')}`;
+            item.innerHTML = `<span class="${typeClass}">${safeType}:</span><pre class="event-data">${safeDataString}</pre>`;
+            eventLog.appendChild(item);
+
+            // Auto-scroll sidebar log if near the bottom AND VISIBLE
+            if (bodyElement.classList.contains('sidebar-visible')) {
+                 const logContainer = document.getElementById('eventLogContainer');
+                 if (logContainer.scrollHeight - logContainer.scrollTop <= logContainer.clientHeight + 50) {
+                     logContainer.scrollTop = logContainer.scrollHeight;
+                 }
+            }
+
+            handleChatEvent(type, data); // Delegate chat updates
+        }
+
+        // --- Chat UI Event Handling (Unchanged) ---
+        function handleChatEvent(type, data) { /* ... */ }
+
+        // --- Input Enable/Disable (Unchanged) ---
+        function setInputEnabled(enabled) { /* ... */ }
+        function tryEnablingInput() { /* ... */ }
+
+        // --- SSE Connection (Unchanged) ---
+        function connectSSE() { /* ... */ }
+
+        // --- Sending Messages (Unchanged) ---
+        async function sendMessage() { /* ... */ }
+
+
+        // --- Event Listeners ---
+        sendButton.addEventListener('click', sendMessage);
+        queryInput.addEventListener('input', adjustTextareaHeight);
+        queryInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey && !sendButton.disabled) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // --- NEW Toggle Sidebar Listener ---
+        toggleSidebarButton.addEventListener('click', () => {
+            bodyElement.classList.toggle('sidebar-visible');
+
+            // Optional: Change button text/icon based on state
+            if (bodyElement.classList.contains('sidebar-visible')) {
+                 toggleSidebarButton.textContent = '✕'; // Close icon
+                 toggleSidebarButton.title = 'Hide Event Log';
+                 // Ensure log scrolls to bottom when opened if it grew while hidden
+                 const logContainer = document.getElementById('eventLogContainer');
+                 logContainer.scrollTop = logContainer.scrollHeight;
+            } else {
+                 toggleSidebarButton.textContent = '📄'; // Document icon
+                 toggleSidebarButton.title = 'Show Event Log';
+            }
+        });
+
+
+        // --- Initial Connection & Setup ---
+        connectSSE();
+        adjustTextareaHeight();
+
+        // --- Make sure utility functions are defined before use (copy from previous step if needed) ---
+        // Example for escapeHtml:
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return unsafe;
+            return unsafe
+                 .replace(/&/g, "&")
+                 .replace(/</g, "<")
+                 .replace(/>/g, ">")
+                 .replace(/"/g, "\"")
+                 .replace(/'/g, "'");
+        }
+         // ... include other utility functions like adjustTextareaHeight, scrollChatToBottom, addMessageToChat, appendToMessage ...
+         // ... include handleChatEvent, setInputEnabled, tryEnablingInput, connectSSE, sendMessage ...
+         // (The full JS code from the previous step should be here, minus the toggle listener which is added above)
+
+        // --- Full JS functions from previous step needed here ---
+        function adjustTextareaHeight() {
+            queryInput.style.height = 'auto';
+            let scrollHeight = queryInput.scrollHeight;
+            const maxHeight = parseInt(window.getComputedStyle(queryInput).maxHeight, 10);
+            if (scrollHeight > maxHeight) {
+                queryInput.style.height = maxHeight + 'px';
+                queryInput.style.overflowY = 'auto';
+            } else {
+                queryInput.style.height = scrollHeight + 'px';
+                queryInput.style.overflowY = 'hidden';
+            }
+        }
+        function scrollChatToBottom() { requestAnimationFrame(() => { chatHistory.scrollTop = chatHistory.scrollHeight; }); }
+        function addMessageToChat(content, senderClass) { const messageDiv = document.createElement('div'); messageDiv.classList.add('message', `message-${senderClass}`); messageDiv.textContent = content; chatHistory.appendChild(messageDiv); scrollChatToBottom(); return messageDiv; }
+        function appendToMessage(div, textChunk) { if (div) { div.textContent += textChunk; scrollChatToBottom(); } }
+        function handleChatEvent(type, data) { /* Full function from prev step */
+             switch (type) {
+                case 'text_chunk':
+                    if (!currentAiMessageDiv) { currentAiMessageDiv = addMessageToChat('', 'ai'); }
+                    appendToMessage(currentAiMessageDiv, data.text || '');
+                    break;
+                case 'end':
+                    currentAiMessageDiv = null;
+                    if (clientId && queryInput.disabled) { setInputEnabled(true); }
+                    break;
+                case 'error':
+                    const errorMessage = `⚠️ Error: ${data?.message || 'Unknown server error'}`;
+                    addMessageToChat(errorMessage, 'error');
+                    currentAiMessageDiv = null;
+                    if (clientId && queryInput.disabled) { setInputEnabled(true); }
+                    break;
+                case 'clientId': break; // Handled in connectSSE
+                case 'all_tools_ready': toolsAreReady = true; tryEnablingInput(); break;
+                case 'status': if(data.message === 'Processing query...') { setInputEnabled(false); currentAiMessageDiv = null; } break;
+            }
+        }
+        function setInputEnabled(enabled) { console.log(`Setting input enabled: ${enabled}`); queryInput.disabled = !enabled; sendButton.disabled = !enabled; queryInput.placeholder = enabled ? "Enter your query (Shift+Enter for new line)..." : "Processing..."; if (enabled) { queryInput.focus(); adjustTextareaHeight(); } }
+        function tryEnablingInput() { console.log(`Trying to enable input. ClientId: ${!!clientId}, ToolsReady: ${toolsAreReady}`); if (clientId && toolsAreReady && queryInput.disabled) { console.log(">>> Conditions met! Enabling input."); setInputEnabled(true); } else if (clientId && !toolsAreReady) { console.log("Waiting for tools status..."); } else if (!clientId && toolsAreReady) { console.log("Waiting for clientId..."); } else { console.log("Still waiting for ClientId and/or ToolsReady."); } }
+        function connectSSE() { /* Full function from prev step */
+             clientId = null; toolsAreReady = false; currentAiMessageDiv = null;
+             if (eventSource && eventSource.readyState !== EventSource.CLOSED) { eventSource.close(); }
+             eventSource = null; console.log("Attempting SSE connection..."); logEvent('client_status', { message: 'Attempting connection...' }); setInputEnabled(false);
+             try { eventSource = new EventSource(`${SERVER_URL}/chat`); eventSource.onopen = function (event) { console.log("SSE Connection Opened!"); logEvent('client_status', { message: 'SSE connection opened.' }); };
+                 eventSource.addEventListener('clientId', function (event) { try { const data = JSON.parse(event.data); if (data.clientId && !clientId) { clientId = data.clientId; logEvent('clientId', data); console.log(`>>> Client ID stored: ${clientId}`); tryEnablingInput(); } } catch (e) { logEvent('parse_error', { event: 'clientId', rawData: event.data, error: e.message }); } });
+                 const eventTypes = ['status', 'all_tools_ready', 'text_chunk', 'error', 'end']; eventTypes.forEach(eventType => { if (eventType === 'clientId') return; eventSource.addEventListener(eventType, (event) => { try { const data = JSON.parse(event.data); logEvent(eventType, data); } catch (e) { logEvent('parse_error', { event: eventType, rawData: event.data, error: e.message }); } }); });
+                 eventSource.onmessage = function (event) { console.warn("SSE received default message (no specific event type):", event); try { const data = JSON.parse(event.data); logEvent('raw_message', data); } catch (e) { logEvent('raw_message', { rawData: event.data }); } };
+                 eventSource.onerror = function (error) { console.error('SSE EventSource Error:', error); logEvent('client_status', { message: 'SSE connection error or closed. Retrying in 5s...' }); if (eventSource) { eventSource.close(); } eventSource = null; clientId = null; toolsAreReady = false; setInputEnabled(false); setTimeout(connectSSE, 5000); };
+             } catch (e) { logEvent('client_error', { message: `Failed to create EventSource: ${e.message}`}); addMessageToChat(`❌ Critical Error: Could not establish connection. Check console & Server URL (${SERVER_URL}). ${e.message}`, 'error'); setInputEnabled(false); }
+        }
+        async function sendMessage() { /* Full function from prev step */
+            const query = queryInput.value.trim(); if (!query || sendButton.disabled) { console.warn("Cannot send message - empty or disabled:", {query: !!query, enabled: !sendButton.disabled}); return; }
+            addMessageToChat(query, 'user'); logEvent('user_query', { query }); queryInput.value = ''; adjustTextareaHeight(); queryInput.focus(); setInputEnabled(false); currentAiMessageDiv = null;
+            try { const response = await fetch(`${SERVER_URL}/chat/${clientId}`, { method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify({ query: query }), });
+                 let responseBody = {}; try { responseBody = await response.json(); } catch(jsonError) { try { responseBody = { error: await response.text() }; } catch(textError){ responseBody = { error: "Failed to get response body."}; } }
+                if (!response.ok) { const postErrorMsg = `Failed to send message (HTTP ${response.status}): ${responseBody.error || 'Server did not provide details.'}`; console.error('Error sending message POST:', response.status, responseBody); logEvent('send_error', { status: response.status, error: responseBody }); addMessageToChat(`❌ ${postErrorMsg}`, 'error'); if (clientId && toolsAreReady) { setInputEnabled(true); }
+                } else { console.log('POST Message accepted by server:', responseBody); }
+            } catch (error) { const networkErrorMsg = `Network error sending message: ${error.message}. Check connection.`; console.error('Network error sending message POST:', error); logEvent('network_error', { message: networkErrorMsg }); addMessageToChat(`❌ ${networkErrorMsg}`, 'error'); if(clientId && toolsAreReady) { setInputEnabled(true); } }
+        }
+
+    </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>MCP SSE Client - Chat</title>
+    <title>Claude AI</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -15,37 +15,45 @@
 
     <style>
         :root {
-            --bg-color: #f7f7f8;
+            /* Claude AI Colors */
+            --bg-color: #f8fafc;
             --sidebar-bg: #ffffff;
             --main-bg: #ffffff;
-            --chat-history-bg: #ffffff; /* Use main bg for chat area */
+            --chat-history-bg: #ffffff;
             --input-bg: #ffffff;
-            --message-user-bg: #eef2ff; /* Lighter indigo for user messages */
-            --message-ai-bg: #f9fafb;  /* Very light grey for AI messages */
-            --message-thinking-bg: #f9fafb; /* Same as AI for consistency */
-            --message-thinking-text: #6b7280; /* Muted text color */
-            --text-color: #1f2937;
-            --text-muted: #6b7280;
-            --border-color: #e5e7eb;
-            --accent-color: #4f46e5;
-            --accent-hover-color: #4338ca;
-            --disabled-color: #d1d5db;
-            --code-bg: #f3f4f6; /* Default LIGHT code block background */
-            --error-color: #dc2626; /* Red for errors */
-            --error-text-color: #991b1b; /* Darker red text for errors */
+            --message-user-bg: #f1f5f9; /* Light gray for user messages */
+            --message-ai-bg: #ffffff;  /* White for AI messages */
+            --message-thinking-bg: #f8fafc; /* Light background for thinking indicator */
+            --message-thinking-text: #64748b; /* Slate color for thinking text */
+            --text-color: #0f172a; /* Dark slate for text */
+            --text-muted: #64748b; /* Muted slate for secondary text */
+            --border-color: #e2e8f0; /* Light border color */
+            --accent-color: #7857ff; /* Claude's purple */
+            --accent-hover-color: #6344e2; /* Darker purple for hover states */
+            --disabled-color: #cbd5e1; /* Lighter slate for disabled elements */
+            --code-bg: #f8fafc; /* Very light background for code */
+            --error-color: #ef4444; /* Red for errors */
+            --error-text-color: #b91c1c; /* Darker red text for errors */
             --error-bg-subtle: #fee2e2; /* Light red background for error messages */
-            --toggle-btn-bg: var(--accent-color);
-            --toggle-btn-hover-bg: var(--accent-hover-color);
+            --toggle-btn-bg: #7857ff;
+            --toggle-btn-hover-bg: #6344e2;
 
-            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            --font-mono: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            /* Claude AI Typography */
+            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono', monospace;
 
-            --border-radius-sm: 4px;
-            --border-radius-md: 6px;
-            --border-radius-lg: 8px;
-            --sidebar-width: 35%; /* Define sidebar width as a variable */
+            --border-radius-sm: 6px;
+            --border-radius-md: 10px;
+            --border-radius-lg: 16px;
+            --sidebar-width: 35%;
             --sidebar-min-width: 280px;
             --sidebar-max-width: 450px;
+
+            /* Claude AI Layout Variables */
+            --container-max-width: 1024px;
+            --message-max-width: 85%;
+            --message-spacing: 24px;
+            --section-spacing: 32px;
         }
 
         html { box-sizing: border-box; }
@@ -54,14 +62,15 @@
         body {
             font-family: var(--font-sans);
             display: flex;
-            height: 100vh; /* Use full viewport height */
-            margin: 0;
+            height: 100vh;
+            margin: 0 auto;
             font-size: 16px;
             line-height: 1.6;
             background-color: var(--bg-color);
             color: var(--text-color);
             padding: 12px;
-            transition: gap 0.3s ease; /* Smooth transition for gap */
+            transition: gap 0.3s ease;
+            max-width: var(--container-max-width);
         }
 
         /* Sidebar Styles */
@@ -76,36 +85,36 @@
             padding: 0;
             overflow: hidden;
             flex-direction: column;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-            flex-shrink: 0; /* Prevent sidebar from shrinking unexpectedly */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
         }
 
-         /* State when sidebar should be visible */
+        /* State when sidebar should be visible */
         body.sidebar-visible {
-            gap: 12px; /* Apply gap when sidebar is shown */
+            gap: 12px;
         }
         body.sidebar-visible #sidebar {
-            display: flex; /* Show the sidebar */
+            display: flex;
         }
 
-         #sidebar h2 {
-             margin: 0;
-             padding: 16px 20px;
-             font-size: 1.15em;
-             font-weight: 600;
-             border-bottom: 1px solid var(--border-color);
-             flex-shrink: 0;
-         }
+        #sidebar h2 {
+            margin: 0;
+            padding: 16px 20px;
+            font-size: 1.15em;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
 
-         #eventLogContainer {
-             padding: 16px 20px;
-             overflow-y: auto;
-             flex-grow: 1;
-         }
+        #eventLogContainer {
+            padding: 16px 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
 
         /* Main Content Styles */
         #main {
-            flex-grow: 1; /* Takes remaining space */
+            flex-grow: 1;
             background-color: var(--main-bg);
             border: 1px solid var(--border-color);
             border-radius: var(--border-radius-lg);
@@ -113,163 +122,360 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
             transition: width 0.3s ease;
         }
 
         #chatHistory {
             flex-grow: 1;
             background-color: var(--chat-history-bg);
-            padding: 16px 20px;
+            padding: 20px 24px;
             overflow-y: auto;
             line-height: 1.7;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: var(--message-spacing);
         }
 
-        /* --- General Message & Code Styles (Light Theme Defaults) --- */
-
-        /* Basic message styling */
-        .message { padding: 10px 14px; border-radius: var(--border-radius-lg); max-width: 85%; word-wrap: break-word; white-space: normal; }
-        .message-user { background-color: var(--message-user-bg); color: #3730a3; align-self: flex-end; border-bottom-right-radius: var(--border-radius-sm); white-space: pre-wrap; }
-        .message-ai { background-color: var(--message-ai-bg); border: 1px solid var(--border-color); align-self: flex-start; border-bottom-left-radius: var(--border-radius-sm); }
-        .message-error { background-color: var(--error-bg-subtle); color: var(--error-text-color); border: 1px solid var(--error-color); align-self: stretch; max-width: 100%; font-size: 0.95em; white-space: pre-wrap; }
-        .message-error strong { color: var(--error-color); }
-        .message-thinking { background-color: var(--message-thinking-bg); color: var(--message-thinking-text); border: 1px solid var(--border-color); align-self: flex-start; border-bottom-left-radius: var(--border-radius-sm); font-style: italic; white-space: pre-wrap;}
+        /* Message Styles - Claude AI Theme */
+        .message {
+            padding: 16px 20px;
+            border-radius: var(--border-radius-md);
+            max-width: var(--message-max-width);
+            word-wrap: break-word;
+            white-space: normal;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+        
+        .message-user {
+            background-color: var(--message-user-bg);
+            color: var(--text-color);
+            align-self: flex-end;
+            border-bottom-right-radius: var(--border-radius-sm);
+            white-space: pre-wrap;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .message-ai {
+            background-color: var(--message-ai-bg);
+            border: 1px solid var(--border-color);
+            align-self: flex-start;
+            border-bottom-left-radius: var(--border-radius-sm);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+        
+        .message-error {
+            background-color: var(--error-bg-subtle);
+            color: var(--error-text-color);
+            border: 1px solid var(--error-color);
+            align-self: stretch;
+            max-width: 100%;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+        }
+        
+        .message-error strong {
+            color: var(--error-color);
+        }
+        
+        .message-thinking {
+            background-color: var(--message-thinking-bg);
+            color: var(--message-thinking-text);
+            border: 1px solid var(--border-color);
+            align-self: flex-start;
+            border-bottom-left-radius: var(--border-radius-sm);
+            font-style: italic;
+            white-space: pre-wrap;
+        }
 
         /* --- Inline Code --- */
         .message code:not(pre code) {
             font-family: var(--font-mono);
-            background-color: rgba(0,0,0,0.05);
+            background-color: rgba(0,0,0,0.04);
             padding: 0.2em 0.4em;
             border-radius: var(--border-radius-sm);
             font-size: 0.9em;
             white-space: pre-wrap;
             word-wrap: break-word;
-            color: #b51a4c;
+            color: #b91c1c;
         }
 
         /* --- Default Code Block Container <pre> --- */
         .message pre {
             font-family: var(--font-mono);
-            background-color: var(--code-bg); /* Light background default */
-            padding: 0; /* Padding applied to inner code tag */
+            background-color: var(--code-bg);
+            padding: 0;
             border-radius: var(--border-radius-md);
-            border: 1px solid var(--border-color); /* Light border */
+            border: 1px solid var(--border-color);
             overflow-x: auto;
             font-size: 0.9em;
             line-height: 1.5;
             margin: 0.8em 0;
-            white-space: pre; /* Preserve code formatting */
-            word-wrap: normal; /* Prevent wrapping */
+            white-space: pre;
+            word-wrap: normal;
         }
 
         /* --- Default Code inside Block <pre><code> --- */
-        /* This applies to ALL code blocks now */
         .message pre code {
-            background-color: transparent; /* Background is on the <pre> */
-            padding: 1em; /* Consistent padding */
+            background-color: transparent;
+            padding: 1em;
             font-size: inherit;
-            white-space: inherit; /* Inherit 'pre' */
+            white-space: inherit;
             display: block;
-            word-wrap: inherit; /* Inherit 'normal' */
+            word-wrap: inherit;
             color: var(--text-color);
             box-sizing: border-box;
         }
-        /* Ensure highlighted code also gets padding and display block */
+        
         .message pre code.hljs {
             padding: 1em;
             display: block;
         }
 
-
         /* --- Basic Markdown Element Styling --- */
         .message-ai h1, .message-ai h2, .message-ai h3, .message-ai h4, .message-ai h5, .message-ai h6 {
-            margin-top: 0.8em;
-            margin-bottom: 0.4em;
+            margin-top: 1.2em;
+            margin-bottom: 0.5em;
             line-height: 1.3;
             font-weight: 600;
+            color: var(--text-color);
         }
+        
         .message-ai h1 { font-size: 1.5em; }
         .message-ai h2 { font-size: 1.3em; }
         .message-ai h3 { font-size: 1.15em; }
+        
         .message-ai p {
             margin-top: 0;
-            margin-bottom: 0.8em;
-            white-space: normal; /* Ensure paragraphs wrap */
+            margin-bottom: 1em;
+            white-space: normal;
         }
+        
         .message-ai > p { display: block; }
+        
         .message-ai ul, .message-ai ol {
             margin-top: 0;
-            margin-bottom: 0.8em;
-            padding-left: 1.8em; /* Indent lists */
+            margin-bottom: 1em;
+            padding-left: 1.8em;
         }
-        .message-ai li { margin-bottom: 0.2em; }
+        
+        .message-ai li { margin-bottom: 0.4em; }
         .message-ai strong { font-weight: 600; }
         .message-ai em { font-style: italic; }
-        .message-ai a { color: var(--accent-color); text-decoration: none; }
-        .message-ai a:hover { text-decoration: underline; }
+        
+        .message-ai a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        .message-ai a:hover {
+            text-decoration: underline;
+        }
+        
         .message-ai > *:first-child { margin-top: 0; }
         .message-ai > *:last-child { margin-bottom: 0; }
         .message-ai li > p { margin-bottom: 0; display: inline; }
         .message-ai li > ul, .message-ai li > ol { margin-top: 0.2em; }
-
 
         /* Thinking Indicator Animation */
         @keyframes pulse {
             0%, 100% { opacity: 0.6; }
             50% { opacity: 1; }
         }
+        
         .message-thinking {
             animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
-
-        /* Input Area Styles */
-        #inputArea { display: flex; gap: 10px; padding: 12px 20px; align-items: flex-end; background-color: var(--input-bg); border-top: 1px solid var(--border-color); flex-shrink: 0; }
-        #queryInput { flex-grow: 1; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); font-family: inherit; font-size: 1em; line-height: 1.5; background-color: #fff; color: var(--text-color); transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; resize: none; overflow-y: hidden; min-height: calc(1.5em + 20px + 2px); max-height: 200px; overflow-wrap: break-word; }
-        #queryInput:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2); }
-        #queryInput::placeholder { color: var(--text-muted); opacity: 1; }
-        #sendButton { padding: 10px 18px; border: none; background-color: var(--accent-color); color: white; border-radius: var(--border-radius-md); cursor: pointer; font-size: 1em; font-weight: 500; transition: background-color 0.2s ease-in-out; white-space: nowrap; height: calc(1.5em + 20px + 2px); align-self: flex-end; }
-        #sendButton:disabled { background-color: var(--disabled-color); color: var(--text-muted); cursor: not-allowed; }
-        #sendButton:not(:disabled):hover { background-color: var(--accent-hover-color); }
+        /* Input Area Styles - Claude AI Style */
+        #inputArea {
+            display: flex;
+            gap: 12px;
+            padding: 20px 24px;
+            align-items: flex-end;
+            background-color: var(--input-bg);
+            border-top: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        
+        #queryInput {
+            flex-grow: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            font-family: inherit;
+            font-size: 1em;
+            line-height: 1.5;
+            background-color: #fff;
+            color: var(--text-color);
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            resize: none;
+            overflow-y: hidden;
+            min-height: calc(1.5em + 24px + 2px);
+            max-height: 200px;
+            overflow-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        #queryInput:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(120, 87, 255, 0.2);
+        }
+        
+        #queryInput::placeholder {
+            color: var(--text-muted);
+            opacity: 1;
+        }
+        
+        #sendButton {
+            padding: 12px 20px;
+            border: none;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: background-color 0.2s ease-in-out;
+            white-space: nowrap;
+            height: calc(1.5em + 24px + 2px);
+            align-self: flex-end;
+        }
+        
+        #sendButton:disabled {
+            background-color: var(--disabled-color);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+        
+        #sendButton:not(:disabled):hover {
+            background-color: var(--accent-hover-color);
+        }
 
         /* Event Log Styles */
-        #eventLog { list-style-type: none; padding: 0; margin: 0; }
-        #eventLog li { margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; word-break: break-word; }
-        #eventLog li:last-child { border-bottom: none; margin-bottom: 0; }
-        .event-type { font-weight: 600; color: var(--accent-color); display: block; margin-bottom: 4px; font-size: 0.9em; text-transform: capitalize; }
-        .event-data { font-family: var(--font-mono); font-size: 0.85em; background-color: var(--code-bg); padding: 8px 10px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); display: block; white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; color: #374151; line-height: 1.5; }
-        .event-type.client-status, .event-type.status { color: var(--text-muted); }
-        .event-type.error, .event-type.client-error, .event-type.parse-error, .event-type.send-error, .event-type.network-error, .event-type.tool-connection-failed { color: var(--error-color); }
+        #eventLog {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        #eventLog li {
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            word-break: break-word;
+        }
+        
+        #eventLog li:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .event-type {
+            font-weight: 600;
+            color: var(--accent-color);
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.9em;
+            text-transform: capitalize;
+        }
+        
+        .event-data {
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            background-color: var(--code-bg);
+            padding: 8px 10px;
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            display: block;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+        
+        .event-type.client-status, .event-type.status {
+            color: var(--text-muted);
+        }
+        
+        .event-type.error, .event-type.client-error, .event-type.parse-error, .event-type.send-error, .event-type.network-error, .event-type.tool-connection-failed {
+            color: var(--error-color);
+        }
 
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-color); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background-color: var(--disabled-color); border-radius: 4px; border: 2px solid var(--bg-color); }
-        ::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted); }
+        /* Scrollbar Styling - Claude Style */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+            border: 2px solid var(--bg-color);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8;
+        }
 
         /* Toggle Button Style */
         #toggleSidebarButton {
             position: fixed;
-            top: 18px; /* Align with body padding + a bit */
+            top: 18px;
             right: 18px;
-            z-index: 1000; /* Ensure it's above other content */
+            z-index: 1000;
             padding: 8px 10px;
             background-color: var(--toggle-btn-bg);
             color: white;
             border: none;
             border-radius: var(--border-radius-md);
             cursor: pointer;
-            font-size: 1.2em; /* Adjust size of emoji/icon */
+            font-size: 1.2em;
             line-height: 1;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             transition: background-color 0.2s ease, transform 0.1s ease;
         }
-        #toggleSidebarButton:hover { background-color: var(--toggle-btn-hover-bg); }
-        #toggleSidebarButton:active { transform: scale(0.95); }
+        
+        #toggleSidebarButton:hover {
+            background-color: var(--toggle-btn-hover-bg);
+        }
+        
+        #toggleSidebarButton:active {
+            transform: scale(0.95);
+        }
 
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            :root {
+                --message-max-width: 90%;
+                --message-spacing: 16px;
+            }
+            
+            body {
+                padding: 8px;
+            }
+            
+            #chatHistory {
+                padding: 16px;
+            }
+            
+            #inputArea {
+                padding: 12px 16px;
+            }
+            
+            .message {
+                padding: 12px 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -330,7 +536,7 @@
                  .replace(/'/g, "'");
         }
 
-        function adjustTextareaHeight() { /* ... unchanged ... */
+        function adjustTextareaHeight() { 
             queryInput.style.height = 'auto';
             let scrollHeight = queryInput.scrollHeight;
             const maxHeight = parseInt(window.getComputedStyle(queryInput).maxHeight, 10);
@@ -343,7 +549,7 @@
             }
         }
 
-        function scrollChatToBottom() { /* ... unchanged ... */
+        function scrollChatToBottom() { 
             requestAnimationFrame(() => {
                 const isScrolledToBottom = chatHistory.scrollHeight - chatHistory.clientHeight <= chatHistory.scrollTop + 50;
                  if (isScrolledToBottom) {
@@ -352,7 +558,7 @@
             });
         }
 
-        function addMessageToChat(content, senderClass, optionalId = null) { /* ... unchanged ... */
+        function addMessageToChat(content, senderClass, optionalId = null) { 
              const messageDiv = document.createElement('div');
              messageDiv.classList.add('message', `message-${senderClass}`);
              if (senderClass !== 'ai') {
@@ -366,7 +572,7 @@
              return messageDiv;
          }
 
-        function removeThinkingIndicator() { /* ... unchanged ... */
+        function removeThinkingIndicator() { 
             if (thinkingIndicatorDiv) {
                 thinkingIndicatorDiv.remove();
                 thinkingIndicatorDiv = null;
@@ -374,7 +580,7 @@
         }
 
         // --- NEW HELPER: Flush Buffered Markdown ---
-        function flushMarkdownBuffer() { /* ... unchanged ... */
+        function flushMarkdownBuffer() { 
             if (currentAiMessageContext.mainDiv && currentAiMessageContext.markdownBuffer.length > 0 && typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
                 console.log("Flushing Markdown Buffer:", currentAiMessageContext.markdownBuffer);
                 try {
@@ -399,7 +605,7 @@
 
 
         // --- Syntax Highlighting ---
-        function highlightCodeInElement(element) { /* ... unchanged ... */
+        function highlightCodeInElement(element) { 
             if (typeof hljs !== 'undefined' && element) {
                  const blocks = element.querySelectorAll('pre code');
                  if (blocks.length > 0) {
@@ -420,7 +626,7 @@
         }
 
         // --- REVISED: AI Message Chunk Processing ---
-        function processAndAppendChunk(textChunk) { /* ... unchanged ... */
+        function processAndAppendChunk(textChunk) { 
              if (!currentAiMessageContext.mainDiv) {
                  currentAiMessageContext.mainDiv = addMessageToChat('', 'ai');
                  currentAiMessageContext.isInsideCodeBlock = false;
@@ -500,7 +706,7 @@
 
 
         // --- Event Logging (Sidebar) ---
-        function logEvent(type, data) { /* ... unchanged ... */
+        function logEvent(type, data) { 
              const item = document.createElement('li');
              let dataString;
              try { dataString = (typeof data === 'object' && data !== null) ? JSON.stringify(data, null, 2) : String(data); }
@@ -554,11 +760,11 @@
         }
 
         // --- Input Enable/Disable ---
-        function setInputEnabled(enabled) { /* ... unchanged ... */
+        function setInputEnabled(enabled) {
             console.log(`Setting input enabled: ${enabled}`);
             queryInput.disabled = !enabled;
             sendButton.disabled = !enabled;
-            queryInput.placeholder = enabled ? "Enter your query (Shift+Enter for new line)..." : "Processing...";
+            queryInput.placeholder = enabled ? "Message Claude..." : "Claude is thinking...";
             if (enabled) {
                 if (window.getComputedStyle(queryInput).display !== 'none') {
                     queryInput.focus();
@@ -567,7 +773,7 @@
             }
         }
 
-        function tryEnablingInput() { /* ... unchanged ... */
+        function tryEnablingInput() {
             console.log(`Trying to enable input. ClientId: ${!!clientId}, ToolsReady: ${toolsAreReady}, IndicatorVisible: ${!!thinkingIndicatorDiv}`);
             if (clientId && toolsAreReady && !thinkingIndicatorDiv && queryInput.disabled) {
                  console.log(">>> Conditions met! Enabling input.");
@@ -595,6 +801,7 @@
              setInputEnabled(false);
 
              try {
+                console.log(`Establishing SSE connection to ${SERVER_URL}/chat`);
                  eventSource = new EventSource(`${SERVER_URL}/chat`);
 
                  eventSource.onopen = function (event) {
@@ -676,7 +883,7 @@
         }
 
         // --- Sending Messages ---
-        async function sendMessage() { /* ... unchanged ... */
+        async function sendMessage() {
             const query = queryInput.value.trim();
             if (!query || sendButton.disabled) return;
 
@@ -688,7 +895,7 @@
             setInputEnabled(false);
 
             removeThinkingIndicator();
-            thinkingIndicatorDiv = addMessageToChat('🤔 Thinking...', 'thinking');
+            thinkingIndicatorDiv = addMessageToChat('Claude is thinking...', 'thinking');
 
             try {
                 const response = await fetch(`${SERVER_URL}/chat/${clientId}`, {
@@ -730,14 +937,14 @@
         // --- Event Listeners ---
         sendButton.addEventListener('click', sendMessage);
         queryInput.addEventListener('input', adjustTextareaHeight);
-        queryInput.addEventListener('keydown', (e) => { /* ... unchanged ... */
+        queryInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey && !sendButton.disabled) {
                 e.preventDefault();
                 sendMessage();
             }
         });
 
-        toggleSidebarButton.addEventListener('click', () => { /* ... unchanged ... */
+        toggleSidebarButton.addEventListener('click', () => {
             bodyElement.classList.toggle('sidebar-visible');
             if (bodyElement.classList.contains('sidebar-visible')) {
                  toggleSidebarButton.textContent = '✕';
@@ -750,11 +957,18 @@
         });
 
         // --- Initial Setup ---
-        document.addEventListener('DOMContentLoaded', () => { /* ... unchanged ... */
+        document.addEventListener('DOMContentLoaded', () => {
             adjustTextareaHeight();
             connectSSE();
+            
+            // Add greeting message
+            setTimeout(() => {
+                if (clientId) {
+                    const greetingDiv = addMessageToChat('', 'ai');
+                    greetingDiv.innerHTML = '<p>Hi! I\'m Claude. How can I help you today?</p>';
+                }
+            }, 1000);
         });
-
     </script>
 </body>
 </html>

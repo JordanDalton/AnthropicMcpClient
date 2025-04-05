@@ -1,184 +1,292 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
     <title>Claude AI</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- highlight.js CSS: Using the default theme -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
-
-    <!-- Markdown Parser (Marked.js) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- HTML Sanitizer (DOMPurify) -->
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
-
     <style>
         :root {
-            /* Claude AI Colors */
-            --bg-color: #f8fafc;
+            /* DeepSeek-inspired Color Palette */
+            --bg-color: #f9fafb;
             --sidebar-bg: #ffffff;
             --main-bg: #ffffff;
             --chat-history-bg: #ffffff;
             --input-bg: #ffffff;
-            --message-user-bg: #f1f5f9; /* Light gray for user messages */
-            --message-ai-bg: #ffffff;  /* White for AI messages */
-            --message-thinking-bg: #f8fafc; /* Light background for thinking indicator */
-            --message-thinking-text: #64748b; /* Slate color for thinking text */
-            --text-color: #0f172a; /* Dark slate for text */
-            --text-muted: #64748b; /* Muted slate for secondary text */
-            --border-color: #e2e8f0; /* Light border color */
-            --accent-color: #7857ff; /* Claude's purple */
-            --accent-hover-color: #6344e2; /* Darker purple for hover states */
-            --disabled-color: #cbd5e1; /* Lighter slate for disabled elements */
-            --code-bg: #f8fafc; /* Very light background for code */
-            --error-color: #ef4444; /* Red for errors */
-            --error-text-color: #b91c1c; /* Darker red text for errors */
-            --error-bg-subtle: #fee2e2; /* Light red background for error messages */
-            --toggle-btn-bg: #7857ff;
-            --toggle-btn-hover-bg: #6344e2;
+            --message-user-bg: #f0f5ff;
+            /* Light blue for user messages */
+            --message-ai-bg: #ffffff;
+            /* White for AI messages */
+            --message-thinking-bg: #f8fafc;
+            --message-thinking-text: #64748b;
+            --text-color: #1a1a1a;
+            /* Dark gray for text */
+            --text-muted: #6b7280;
+            /* Muted gray for secondary text */
+            --border-color: #e5e7eb;
+            /* Light border color */
+            --accent-color: #2563eb;
+            /* DeepSeek blue */
+            --accent-hover-color: #1d4ed8;
+            /* Darker blue for hover states */
+            --disabled-color: #d1d5db;
+            /* Lighter gray for disabled elements */
+            --code-bg: #f8fafc;
+            --error-color: #ef4444;
+            --error-text-color: #b91c1c;
+            --error-bg-subtle: #fee2e2;
+            --toggle-btn-bg: #2563eb;
+            --toggle-btn-hover-bg: #1d4ed8;
 
-            /* Claude AI Typography */
-            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            /* Typography */
+            --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono', monospace;
 
+            /* Spacing & Sizing */
             --border-radius-sm: 6px;
-            --border-radius-md: 10px;
-            --border-radius-lg: 16px;
-            --sidebar-width: 35%;
-            --sidebar-min-width: 280px;
-            --sidebar-max-width: 450px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+            --sidebar-width: 320px;
+            --container-max-width: 1200px;
+            --message-max-width: min(85%, 800px);
+            --message-spacing: 20px;
+            --section-spacing: 24px;
 
-            /* Claude AI Layout Variables */
-            --container-max-width: 1024px;
-            --message-max-width: 85%;
-            --message-spacing: 24px;
-            --section-spacing: 32px;
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
-        html { box-sizing: border-box; }
-        *, *:before, *:after { box-sizing: inherit; }
+        @font-face {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 500;
+            font-display: swap;
+            src: url('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 600;
+            font-display: swap;
+            src: url('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hiA.woff2') format('woff2');
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: var(--font-sans);
-            display: flex;
-            height: 100vh;
-            margin: 0 auto;
-            font-size: 16px;
-            line-height: 1.6;
             background-color: var(--bg-color);
             color: var(--text-color);
-            padding: 12px;
-            transition: gap 0.3s ease;
-            max-width: var(--container-max-width);
-        }
-
-        /* Sidebar Styles */
-        #sidebar {
-            display: none; /* HIDDEN BY DEFAULT */
-            width: var(--sidebar-width);
-            min-width: var(--sidebar-min-width);
-            max-width: var(--sidebar-max-width);
-            background-color: var(--sidebar-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius-lg);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
             padding: 0;
             overflow: hidden;
-            flex-direction: column;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-            flex-shrink: 0;
         }
 
-        /* State when sidebar should be visible */
-        body.sidebar-visible {
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background-color: var(--accent-color);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .header-actions {
+            display: flex;
             gap: 12px;
         }
-        body.sidebar-visible #sidebar {
+
+        .header-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: var(--border-radius-md);
+            font-size: 14px;
             display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
         }
 
-        #sidebar h2 {
-            margin: 0;
+        .header-btn:hover {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .header-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Sidebar */
+        #sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            position: absolute;
+            z-index: 20;
+            left: 0;
+            top: 0;
+            bottom: 0;
+        }
+
+        body.sidebar-visible #sidebar {
+            transform: translateX(0);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-header {
             padding: 16px 20px;
-            font-size: 1.15em;
-            font-weight: 600;
             border-bottom: 1px solid var(--border-color);
-            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .close-sidebar {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 4px;
         }
 
         #eventLogContainer {
-            padding: 16px 20px;
+            flex: 1;
             overflow-y: auto;
-            flex-grow: 1;
+            padding: 16px 20px;
         }
 
-        /* Main Content Styles */
+        /* Chat Area */
         #main {
-            flex-grow: 1;
-            background-color: var(--main-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius-lg);
-            padding: 0;
+            flex: 1;
             display: flex;
             flex-direction: column;
+            height: 100%;
             overflow: hidden;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-            transition: width 0.3s ease;
+            background-color: var(--main-bg);
         }
 
         #chatHistory {
-            flex-grow: 1;
-            background-color: var(--chat-history-bg);
-            padding: 20px 24px;
+            flex: 1;
             overflow-y: auto;
-            line-height: 1.7;
+            padding: 24px;
+            scroll-behavior: smooth;
+        }
+
+        /* Messages */
+        .message-container {
             display: flex;
             flex-direction: column;
             gap: var(--message-spacing);
+            max-width: var(--container-max-width);
+            margin: 0 auto;
+            width: 100%;
         }
 
-        /* Message Styles - Claude AI Theme */
         .message {
-            padding: 16px 20px;
-            border-radius: var(--border-radius-md);
             max-width: var(--message-max-width);
+            padding: 16px 20px;
+            border-radius: var(--border-radius-lg);
+            line-height: 1.7;
+            font-size: 16px;
+            position: relative;
             word-wrap: break-word;
             white-space: normal;
-            font-size: 1rem;
-            line-height: 1.7;
         }
-        
+
         .message-user {
             background-color: var(--message-user-bg);
-            color: var(--text-color);
             align-self: flex-end;
             border-bottom-right-radius: var(--border-radius-sm);
-            white-space: pre-wrap;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            margin-left: auto;
+            box-shadow: var(--shadow-sm);
         }
-        
+
         .message-ai {
             background-color: var(--message-ai-bg);
             border: 1px solid var(--border-color);
             align-self: flex-start;
             border-bottom-left-radius: var(--border-radius-sm);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+            box-shadow: var(--shadow-sm);
         }
-        
+
         .message-error {
             background-color: var(--error-bg-subtle);
             color: var(--error-text-color);
             border: 1px solid var(--error-color);
             align-self: stretch;
             max-width: 100%;
-            font-size: 0.95em;
-            white-space: pre-wrap;
+            font-size: 15px;
         }
-        
-        .message-error strong {
-            color: var(--error-color);
-        }
-        
+
         .message-thinking {
             background-color: var(--message-thinking-bg);
             color: var(--message-thinking-text);
@@ -186,22 +294,90 @@
             align-self: flex-start;
             border-bottom-left-radius: var(--border-radius-sm);
             font-style: italic;
-            white-space: pre-wrap;
         }
 
-        /* --- Inline Code --- */
+        /* Input Area */
+        #inputArea {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            position: relative;
+        }
+
+        .input-container {
+            max-width: var(--container-max-width);
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            gap: 12px;
+        }
+
+        #queryInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            font-family: var(--font-sans);
+            font-size: 16px;
+            line-height: 1.5;
+            background-color: white;
+            color: var(--text-color);
+            resize: none;
+            min-height: 56px;
+            max-height: 200px;
+            box-shadow: var(--shadow-sm);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #queryInput:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        #queryInput::placeholder {
+            color: var(--text-muted);
+            opacity: 1;
+        }
+
+        #sendButton {
+            padding: 0 20px;
+            height: 56px;
+            border: none;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        #sendButton:disabled {
+            background-color: var(--disabled-color);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        #sendButton:not(:disabled):hover {
+            background-color: var(--accent-hover-color);
+        }
+
+        /* Code Styling */
         .message code:not(pre code) {
             font-family: var(--font-mono);
-            background-color: rgba(0,0,0,0.04);
+            background-color: rgba(0, 0, 0, 0.05);
             padding: 0.2em 0.4em;
             border-radius: var(--border-radius-sm);
             font-size: 0.9em;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            color: #b91c1c;
+            color: #d6336c;
         }
 
-        /* --- Default Code Block Container <pre> --- */
         .message pre {
             font-family: var(--font-mono);
             background-color: var(--code-bg);
@@ -209,311 +385,291 @@
             border-radius: var(--border-radius-md);
             border: 1px solid var(--border-color);
             overflow-x: auto;
-            font-size: 0.9em;
+            font-size: 14px;
             line-height: 1.5;
-            margin: 0.8em 0;
-            white-space: pre;
-            word-wrap: normal;
+            margin: 1em 0;
         }
 
-        /* --- Default Code inside Block <pre><code> --- */
         .message pre code {
+            display: block;
+            padding: 1em;
             background-color: transparent;
-            padding: 1em;
-            font-size: inherit;
-            white-space: inherit;
-            display: block;
-            word-wrap: inherit;
-            color: var(--text-color);
-            box-sizing: border-box;
-        }
-        
-        .message pre code.hljs {
-            padding: 1em;
-            display: block;
         }
 
-        /* --- Basic Markdown Element Styling --- */
-        .message-ai h1, .message-ai h2, .message-ai h3, .message-ai h4, .message-ai h5, .message-ai h6 {
+        /* Markdown Elements */
+        .message-ai h1,
+        .message-ai h2,
+        .message-ai h3 {
             margin-top: 1.2em;
-            margin-bottom: 0.5em;
+            margin-bottom: 0.6em;
             line-height: 1.3;
             font-weight: 600;
-            color: var(--text-color);
         }
-        
-        .message-ai h1 { font-size: 1.5em; }
-        .message-ai h2 { font-size: 1.3em; }
-        .message-ai h3 { font-size: 1.15em; }
-        
+
+        .message-ai h1 {
+            font-size: 1.5em;
+        }
+
+        .message-ai h2 {
+            font-size: 1.3em;
+        }
+
+        .message-ai h3 {
+            font-size: 1.15em;
+        }
+
         .message-ai p {
-            margin-top: 0;
-            margin-bottom: 1em;
-            white-space: normal;
+            margin-bottom: 0.75em;
+            /* Reduce paragraph spacing too */
         }
-        
-        .message-ai > p { display: block; }
-        
-        .message-ai ul, .message-ai ol {
-            margin-top: 0;
-            margin-bottom: 1em;
-            padding-left: 1.8em;
+
+        .message-ai ul,
+        .message-ai ol {
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+            padding-left: 1.5em;
+            /* Slightly reduced from 1.8em */
         }
-        
-        .message-ai li { margin-bottom: 0.4em; }
-        .message-ai strong { font-weight: 600; }
-        .message-ai em { font-style: italic; }
-        
+
+        .message-ai li {
+            margin-bottom: 0.1em;
+            /* Much tighter spacing */
+            line-height: 1.4;
+            /* Slightly reduced line height */
+        }
+
         .message-ai a {
             color: var(--accent-color);
             text-decoration: none;
         }
-        
+
         .message-ai a:hover {
             text-decoration: underline;
         }
-        
-        .message-ai > *:first-child { margin-top: 0; }
-        .message-ai > *:last-child { margin-bottom: 0; }
-        .message-ai li > p { margin-bottom: 0; display: inline; }
-        .message-ai li > ul, .message-ai li > ol { margin-top: 0.2em; }
 
-        /* Thinking Indicator Animation */
-        @keyframes pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
-        
-        .message-thinking {
-            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        /* Input Area Styles - Claude AI Style */
-        #inputArea {
-            display: flex;
-            gap: 12px;
-            padding: 20px 24px;
-            align-items: flex-end;
-            background-color: var(--input-bg);
-            border-top: 1px solid var(--border-color);
-            flex-shrink: 0;
-        }
-        
-        #queryInput {
-            flex-grow: 1;
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius-md);
-            font-family: inherit;
-            font-size: 1em;
-            line-height: 1.5;
-            background-color: #fff;
-            color: var(--text-color);
-            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            resize: none;
-            overflow-y: hidden;
-            min-height: calc(1.5em + 24px + 2px);
-            max-height: 200px;
-            overflow-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-        
-        #queryInput:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px rgba(120, 87, 255, 0.2);
-        }
-        
-        #queryInput::placeholder {
-            color: var(--text-muted);
-            opacity: 1;
-        }
-        
-        #sendButton {
-            padding: 12px 20px;
-            border: none;
-            background-color: var(--accent-color);
-            color: white;
-            border-radius: var(--border-radius-md);
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 500;
-            transition: background-color 0.2s ease-in-out;
-            white-space: nowrap;
-            height: calc(1.5em + 24px + 2px);
-            align-self: flex-end;
-        }
-        
-        #sendButton:disabled {
-            background-color: var(--disabled-color);
-            color: var(--text-muted);
-            cursor: not-allowed;
-        }
-        
-        #sendButton:not(:disabled):hover {
-            background-color: var(--accent-hover-color);
-        }
-
-        /* Event Log Styles */
+        /* Event Log */
         #eventLog {
-            list-style-type: none;
+            list-style: none;
             padding: 0;
             margin: 0;
         }
-        
+
         #eventLog li {
             margin-bottom: 12px;
-            border-bottom: 1px solid var(--border-color);
             padding-bottom: 12px;
-            word-break: break-word;
+            border-bottom: 1px solid var(--border-color);
         }
-        
+
         #eventLog li:last-child {
             border-bottom: none;
             margin-bottom: 0;
         }
-        
+
         .event-type {
-            font-weight: 600;
+            font-weight: 500;
+            font-size: 14px;
             color: var(--accent-color);
-            display: block;
             margin-bottom: 4px;
-            font-size: 0.9em;
-            text-transform: capitalize;
-        }
-        
-        .event-data {
-            font-family: var(--font-mono);
-            font-size: 0.85em;
-            background-color: var(--code-bg);
-            padding: 8px 10px;
-            border-radius: var(--border-radius-md);
-            border: 1px solid var(--border-color);
             display: block;
-            white-space: pre-wrap;
-            word-break: break-all;
-            max-height: 200px;
-            overflow-y: auto;
-            color: var(--text-color);
-            line-height: 1.5;
-        }
-        
-        .event-type.client-status, .event-type.status {
-            color: var(--text-muted);
-        }
-        
-        .event-type.error, .event-type.client-error, .event-type.parse-error, .event-type.send-error, .event-type.network-error, .event-type.tool-connection-failed {
-            color: var(--error-color);
         }
 
-        /* Scrollbar Styling - Claude Style */
+        .event-data {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            background-color: var(--code-bg);
+            padding: 8px 12px;
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .message-thinking {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Scrollbars */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
-        
+
         ::-webkit-scrollbar-track {
-            background: var(--bg-color);
+            background: rgba(0, 0, 0, 0.05);
             border-radius: 4px;
         }
-        
+
         ::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
+            background-color: rgba(0, 0, 0, 0.2);
             border-radius: 4px;
-            border: 2px solid var(--bg-color);
         }
-        
+
         ::-webkit-scrollbar-thumb:hover {
-            background-color: #94a3b8;
+            background-color: rgba(0, 0, 0, 0.3);
         }
 
-        /* Toggle Button Style */
-        #toggleSidebarButton {
-            position: fixed;
-            top: 18px;
-            right: 18px;
-            z-index: 1000;
-            padding: 8px 10px;
-            background-color: var(--toggle-btn-bg);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius-md);
-            cursor: pointer;
-            font-size: 1.2em;
-            line-height: 1;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: background-color 0.2s ease, transform 0.1s ease;
-        }
-        
-        #toggleSidebarButton:hover {
-            background-color: var(--toggle-btn-hover-bg);
-        }
-        
-        #toggleSidebarButton:active {
-            transform: scale(0.95);
-        }
-
-        /* Responsive adjustments */
+        /* Responsive Adjustments */
         @media (max-width: 768px) {
             :root {
                 --message-max-width: 90%;
                 --message-spacing: 16px;
             }
-            
-            body {
-                padding: 8px;
+
+            .header {
+                padding: 12px 16px;
             }
-            
+
             #chatHistory {
                 padding: 16px;
             }
-            
+
             #inputArea {
                 padding: 12px 16px;
             }
-            
+
             .message {
                 padding: 12px 16px;
             }
+
+            #queryInput {
+                min-height: 48px;
+            }
+
+            #sendButton {
+                height: 48px;
+            }
+        }
+
+        /* Overlay for sidebar on mobile */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 15;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        body.sidebar-visible .sidebar-overlay {
+            opacity: 1;
+            pointer-events: auto;
         }
     </style>
 </head>
+
 <body>
-    <!-- The Toggle Button -->
-    <button id="toggleSidebarButton" title="Toggle Event Log">📄</button>
+    <!-- Header -->
+    <header class="header">
+        <a href="#" class="logo">
+            <span class="logo-icon">C</span>
+            <span>Claude AI</span>
+        </a>
+        <div class="header-actions">
+            <button id="toggleSidebarButton" class="header-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <span>Event Log</span>
+            </button>
+        </div>
+    </header>
 
-    <!-- Layout Structure -->
-    <div id="sidebar">
-        <h2>Event Log</h2>
-        <div id="eventLogContainer">
-            <ul id="eventLog"></ul>
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Sidebar Overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar -->
+        <div id="sidebar">
+            <div class="sidebar-header">
+                <h2>Event Log</h2>
+                <button class="close-sidebar" id="closeSidebarButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div id="eventLogContainer">
+                <ul id="eventLog"></ul>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div id="main">
+            <div id="chatHistory">
+                <div class="message-container" id="messageContainer">
+                    <!-- Messages will be inserted here -->
+                </div>
+            </div>
+            <div id="inputArea">
+                <div class="input-container">
+                    <textarea id="queryInput" placeholder="Message Claude..." rows="1" disabled></textarea>
+                    <button id="sendButton" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
-    <div id="main">
-        <div id="chatHistory"></div>
-        <div id="inputArea">
-            <textarea id="queryInput" placeholder="Enter your query (Shift+Enter for new line)..." rows="1" disabled></textarea>
-            <button id="sendButton" disabled>Send</button>
-        </div>
-    </div>
 
-    <!-- highlight.js JS -->
+    <!-- JavaScript Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <!-- Optional: Load specific languages if needed -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script> -->
-
     <script>
         // --- Global Variables ---
         let clientId = null;
         const eventLog = document.getElementById('eventLog');
         const queryInput = document.getElementById('queryInput');
         const sendButton = document.getElementById('sendButton');
-        const chatHistory = document.getElementById('chatHistory');
-        const SERVER_URL = 'http://localhost:3005'; // Ensure this is correct
+        const messageContainer = document.getElementById('messageContainer');
+        const SERVER_URL = 'http://localhost:3005';
         let eventSource = null;
         let toolsAreReady = false;
         let thinkingIndicatorDiv = null;
         const toggleSidebarButton = document.getElementById('toggleSidebarButton');
+        const closeSidebarButton = document.getElementById('closeSidebarButton');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
         const bodyElement = document.body;
 
         // --- State for current AI message processing ---
@@ -529,14 +685,14 @@
         function escapeHtml(unsafe) {
             if (typeof unsafe !== 'string') return unsafe;
             return unsafe
-                 .replace(/&/g, "&")
-                 .replace(/</g, "<")
-                 .replace(/>/g, ">")
-                 .replace(/"/g, "\"")
-                 .replace(/'/g, "'");
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
-        function adjustTextareaHeight() { 
+        function adjustTextareaHeight() {
             queryInput.style.height = 'auto';
             let scrollHeight = queryInput.scrollHeight;
             const maxHeight = parseInt(window.getComputedStyle(queryInput).maxHeight, 10);
@@ -549,38 +705,41 @@
             }
         }
 
-        function scrollChatToBottom() { 
+        function scrollChatToBottom() {
             requestAnimationFrame(() => {
+                const chatHistory = document.getElementById('chatHistory');
                 const isScrolledToBottom = chatHistory.scrollHeight - chatHistory.clientHeight <= chatHistory.scrollTop + 50;
-                 if (isScrolledToBottom) {
+                if (isScrolledToBottom) {
                     chatHistory.scrollTop = chatHistory.scrollHeight;
-                 }
+                }
             });
         }
 
-        function addMessageToChat(content, senderClass, optionalId = null) { 
-             const messageDiv = document.createElement('div');
-             messageDiv.classList.add('message', `message-${senderClass}`);
-             if (senderClass !== 'ai') {
-                messageDiv.textContent = content;
-             }
-             if (optionalId) {
-                 messageDiv.id = optionalId;
-             }
-             chatHistory.appendChild(messageDiv);
-             scrollChatToBottom();
-             return messageDiv;
-         }
+        function addMessageToChat(content, senderClass, optionalId = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `message-${senderClass}`);
 
-        function removeThinkingIndicator() { 
+            if (senderClass !== 'ai') {
+                messageDiv.textContent = content;
+            }
+
+            if (optionalId) {
+                messageDiv.id = optionalId;
+            }
+
+            messageContainer.appendChild(messageDiv);
+            scrollChatToBottom();
+            return messageDiv;
+        }
+
+        function removeThinkingIndicator() {
             if (thinkingIndicatorDiv) {
                 thinkingIndicatorDiv.remove();
                 thinkingIndicatorDiv = null;
             }
         }
 
-        // --- NEW HELPER: Flush Buffered Markdown ---
-        function flushMarkdownBuffer() { 
+        function flushMarkdownBuffer() {
             if (currentAiMessageContext.mainDiv && currentAiMessageContext.markdownBuffer.length > 0 && typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
                 console.log("Flushing Markdown Buffer:", currentAiMessageContext.markdownBuffer);
                 try {
@@ -592,25 +751,23 @@
                         currentAiMessageContext.mainDiv.appendChild(tempContainer.firstChild);
                     }
                 } catch (e) {
-                     console.error("Error parsing/sanitizing/appending buffered Markdown:", e);
-                     currentAiMessageContext.mainDiv.appendChild(document.createTextNode(currentAiMessageContext.markdownBuffer));
+                    console.error("Error parsing/sanitizing/appending buffered Markdown:", e);
+                    currentAiMessageContext.mainDiv.appendChild(document.createTextNode(currentAiMessageContext.markdownBuffer));
                 }
                 currentAiMessageContext.markdownBuffer = "";
             } else if (currentAiMessageContext.markdownBuffer.length > 0) {
-                 console.warn("Marked.js or DOMPurify not loaded during flush. Appending buffer as plain text.");
-                 currentAiMessageContext.mainDiv.appendChild(document.createTextNode(currentAiMessageContext.markdownBuffer));
-                 currentAiMessageContext.markdownBuffer = "";
+                console.warn("Marked.js or DOMPurify not loaded during flush. Appending buffer as plain text.");
+                currentAiMessageContext.mainDiv.appendChild(document.createTextNode(currentAiMessageContext.markdownBuffer));
+                currentAiMessageContext.markdownBuffer = "";
             }
         }
 
-
-        // --- Syntax Highlighting ---
-        function highlightCodeInElement(element) { 
+        function highlightCodeInElement(element) {
             if (typeof hljs !== 'undefined' && element) {
-                 const blocks = element.querySelectorAll('pre code');
-                 if (blocks.length > 0) {
-                     console.log(`Highlighting ${blocks.length} code block(s)...`);
-                     blocks.forEach((block) => {
+                const blocks = element.querySelectorAll('pre code');
+                if (blocks.length > 0) {
+                    console.log(`Highlighting ${blocks.length} code block(s)...`);
+                    blocks.forEach((block) => {
                         if (!block.classList.contains('hljs')) {
                             try {
                                 hljs.highlightElement(block);
@@ -618,126 +775,131 @@
                                 console.error("Highlight.js error:", e);
                             }
                         }
-                     });
-                 }
+                    });
+                }
             } else if (typeof hljs === 'undefined') {
-                 console.warn("highlight.js not loaded.");
+                console.warn("highlight.js not loaded.");
             }
         }
 
-        // --- REVISED: AI Message Chunk Processing ---
-        function processAndAppendChunk(textChunk) { 
-             if (!currentAiMessageContext.mainDiv) {
-                 currentAiMessageContext.mainDiv = addMessageToChat('', 'ai');
-                 currentAiMessageContext.isInsideCodeBlock = false;
-                 currentAiMessageContext.codeElement = null;
-                 currentAiMessageContext.textBuffer = "";
-                 currentAiMessageContext.markdownBuffer = "";
-             }
-             currentAiMessageContext.textBuffer += textChunk;
-             let processStartIndex = 0;
-             while (processStartIndex < currentAiMessageContext.textBuffer.length) {
-                 const fence = '```';
-                 const fenceIndex = currentAiMessageContext.textBuffer.indexOf(fence, processStartIndex);
-                 if (fenceIndex === -1) {
-                     const remainingText = currentAiMessageContext.textBuffer.substring(processStartIndex);
-                     if (currentAiMessageContext.isInsideCodeBlock) {
-                         if (currentAiMessageContext.codeElement && remainingText.length > 0) {
-                             currentAiMessageContext.codeElement.appendChild(document.createTextNode(remainingText));
-                         }
-                     } else {
-                         currentAiMessageContext.markdownBuffer += remainingText;
-                     }
-                     processStartIndex = currentAiMessageContext.textBuffer.length;
-                     currentAiMessageContext.textBuffer = "";
-                 } else {
-                     const textBeforeFence = currentAiMessageContext.textBuffer.substring(processStartIndex, fenceIndex);
-                     if (currentAiMessageContext.isInsideCodeBlock) {
-                         if (currentAiMessageContext.codeElement && textBeforeFence.length > 0) {
-                             currentAiMessageContext.codeElement.appendChild(document.createTextNode(textBeforeFence));
-                         }
-                     } else {
-                         currentAiMessageContext.markdownBuffer += textBeforeFence;
-                     }
+        function processAndAppendChunk(textChunk) {
+            if (!currentAiMessageContext.mainDiv) {
+                currentAiMessageContext.mainDiv = addMessageToChat('', 'ai');
+                currentAiMessageContext.isInsideCodeBlock = false;
+                currentAiMessageContext.codeElement = null;
+                currentAiMessageContext.textBuffer = "";
+                currentAiMessageContext.markdownBuffer = "";
+            }
 
-                     if (currentAiMessageContext.isInsideCodeBlock) {
-                          if(currentAiMessageContext.codeElement) {
-                             highlightCodeInElement(currentAiMessageContext.codeElement.parentElement);
-                         }
-                         currentAiMessageContext.isInsideCodeBlock = false;
-                         currentAiMessageContext.codeElement = null;
-                          processStartIndex = fenceIndex + fence.length; // Move past closing fence
-                     } else {
-                         flushMarkdownBuffer(); // Flush markdown before starting code block
-                         currentAiMessageContext.isInsideCodeBlock = true;
-                         const openingFenceEndIndex = fenceIndex + fence.length;
-                         let languageStartIndex = openingFenceEndIndex;
-                         let language = 'plaintext';
-                         const lineBreakIndex = currentAiMessageContext.textBuffer.indexOf('\n', openingFenceEndIndex);
-                         let languageLineLength = 0;
+            currentAiMessageContext.textBuffer += textChunk;
+            let processStartIndex = 0;
 
-                         if (lineBreakIndex !== -1) {
-                             const langLine = currentAiMessageContext.textBuffer.substring(openingFenceEndIndex, lineBreakIndex).trim();
-                             if (langLine.length > 0 && !/\s/.test(langLine)) {
-                                 language = escapeHtml(langLine.toLowerCase());
-                                 languageLineLength = (lineBreakIndex + 1) - openingFenceEndIndex;
-                             }
-                         }
+            while (processStartIndex < currentAiMessageContext.textBuffer.length) {
+                const fence = '```';
+                const fenceIndex = currentAiMessageContext.textBuffer.indexOf(fence, processStartIndex);
 
-                         const preElement = document.createElement('pre');
-                         currentAiMessageContext.codeElement = document.createElement('code');
-                         if (language && language !== 'plaintext') {
-                             currentAiMessageContext.codeElement.classList.add(`language-${language}`);
-                         }
-                         preElement.appendChild(currentAiMessageContext.codeElement);
-                         currentAiMessageContext.mainDiv.appendChild(preElement);
-                         processStartIndex = fenceIndex + fence.length + languageLineLength; // Move past fence and lang line
-                     }
-                      // After processing the fence and potentially the lang line,
-                      // update the textBuffer to only contain the remaining unprocessed text
-                      currentAiMessageContext.textBuffer = currentAiMessageContext.textBuffer.substring(processStartIndex);
-                      // Reset processStartIndex for the next loop iteration on the *new* shorter buffer
-                      processStartIndex = 0;
+                if (fenceIndex === -1) {
+                    const remainingText = currentAiMessageContext.textBuffer.substring(processStartIndex);
+                    if (currentAiMessageContext.isInsideCodeBlock) {
+                        if (currentAiMessageContext.codeElement && remainingText.length > 0) {
+                            currentAiMessageContext.codeElement.appendChild(document.createTextNode(remainingText));
+                        }
+                    } else {
+                        currentAiMessageContext.markdownBuffer += remainingText;
+                    }
+                    processStartIndex = currentAiMessageContext.textBuffer.length;
+                    currentAiMessageContext.textBuffer = "";
+                } else {
+                    const textBeforeFence = currentAiMessageContext.textBuffer.substring(processStartIndex, fenceIndex);
 
-                 } // End if/else fence found
-             } // End while loop
-             scrollChatToBottom();
-         }
+                    if (currentAiMessageContext.isInsideCodeBlock) {
+                        if (currentAiMessageContext.codeElement && textBeforeFence.length > 0) {
+                            currentAiMessageContext.codeElement.appendChild(document.createTextNode(textBeforeFence));
+                        }
+                    } else {
+                        currentAiMessageContext.markdownBuffer += textBeforeFence;
+                    }
 
+                    if (currentAiMessageContext.isInsideCodeBlock) {
+                        if (currentAiMessageContext.codeElement) {
+                            highlightCodeInElement(currentAiMessageContext.codeElement.parentElement);
+                        }
+                        currentAiMessageContext.isInsideCodeBlock = false;
+                        currentAiMessageContext.codeElement = null;
+                        processStartIndex = fenceIndex + fence.length;
+                    } else {
+                        flushMarkdownBuffer();
+                        currentAiMessageContext.isInsideCodeBlock = true;
+                        const openingFenceEndIndex = fenceIndex + fence.length;
+                        let languageStartIndex = openingFenceEndIndex;
+                        let language = 'plaintext';
+                        const lineBreakIndex = currentAiMessageContext.textBuffer.indexOf('\n', openingFenceEndIndex);
+                        let languageLineLength = 0;
 
-        // --- Event Logging (Sidebar) ---
-        function logEvent(type, data) { 
-             const item = document.createElement('li');
-             let dataString;
-             try { dataString = (typeof data === 'object' && data !== null) ? JSON.stringify(data, null, 2) : String(data); }
-             catch (e) { dataString = String(data); }
-             const safeType = escapeHtml(type);
-             const safeDataString = escapeHtml(dataString);
-             const typeClass = `event-type ${safeType.toLowerCase().replace(/_/g, '-')}`;
-             item.innerHTML = `<span class="${typeClass}">${safeType}:</span><pre class="event-data">${safeDataString}</pre>`;
-             eventLog.appendChild(item);
+                        if (lineBreakIndex !== -1) {
+                            const langLine = currentAiMessageContext.textBuffer.substring(openingFenceEndIndex, lineBreakIndex).trim();
+                            if (langLine.length > 0 && !/\s/.test(langLine)) {
+                                language = escapeHtml(langLine.toLowerCase());
+                                languageLineLength = (lineBreakIndex + 1) - openingFenceEndIndex;
+                            }
+                        }
 
-             if (bodyElement.classList.contains('sidebar-visible')) {
-                  const logContainer = document.getElementById('eventLogContainer');
-                  if (logContainer.scrollHeight - logContainer.scrollTop <= logContainer.clientHeight + 50) {
-                      logContainer.scrollTop = logContainer.scrollHeight;
-                  }
-             }
-             handleChatEvent(type, data);
-         }
+                        const preElement = document.createElement('pre');
+                        currentAiMessageContext.codeElement = document.createElement('code');
+                        if (language && language !== 'plaintext') {
+                            currentAiMessageContext.codeElement.classList.add(`language-${language}`);
+                        }
+                        preElement.appendChild(currentAiMessageContext.codeElement);
+                        currentAiMessageContext.mainDiv.appendChild(preElement);
+                        processStartIndex = fenceIndex + fence.length + languageLineLength;
+                    }
 
-        // --- Chat UI Event Handling ---
-        function handleChatEvent(type, data) { /* ... unchanged ... */
-             if (['text_chunk', 'error', 'end'].includes(type)) {
-                 removeThinkingIndicator();
-             }
+                    currentAiMessageContext.textBuffer = currentAiMessageContext.textBuffer.substring(processStartIndex);
+                    processStartIndex = 0;
+                }
+            }
 
-             switch (type) {
+            scrollChatToBottom();
+        }
+
+        function logEvent(type, data) {
+            const item = document.createElement('li');
+            let dataString;
+
+            try {
+                dataString = (typeof data === 'object' && data !== null) ?
+                    JSON.stringify(data, null, 2) : String(data);
+            } catch (e) {
+                dataString = String(data);
+            }
+
+            const safeType = escapeHtml(type);
+            const safeDataString = escapeHtml(dataString);
+            const typeClass = `event-type ${safeType.toLowerCase().replace(/_/g, '-')}`;
+            item.innerHTML = `<span class="${typeClass}">${safeType}:</span><pre class="event-data">${safeDataString}</pre>`;
+            eventLog.appendChild(item);
+
+            if (bodyElement.classList.contains('sidebar-visible')) {
+                const logContainer = document.getElementById('eventLogContainer');
+                if (logContainer.scrollHeight - logContainer.scrollTop <= logContainer.clientHeight + 50) {
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                }
+            }
+
+            handleChatEvent(type, data);
+        }
+
+        function handleChatEvent(type, data) {
+            if (['text_chunk', 'error', 'end'].includes(type)) {
+                removeThinkingIndicator();
+            }
+
+            switch (type) {
                 case 'text_chunk':
                     processAndAppendChunk(data.text || '');
                     break;
                 case 'end':
-                    flushMarkdownBuffer(); // Flush any remaining markdown
+                    flushMarkdownBuffer();
                     currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
                     if (clientId && queryInput.disabled) {
                         setInputEnabled(true);
@@ -746,25 +908,31 @@
                 case 'error':
                     const errorMessage = `⚠️ Error: ${data?.message || 'Unknown server error'}`;
                     addMessageToChat(errorMessage, 'error');
-                    flushMarkdownBuffer(); // Attempt flush before reset
+                    flushMarkdownBuffer();
                     currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
                     if (clientId && queryInput.disabled) {
                         setInputEnabled(true);
                     }
                     break;
-                case 'clientId': break; // Explicitly handled in connectSSE listener
-                case 'all_tools_ready': toolsAreReady = true; tryEnablingInput(); break;
-                case 'status': console.log("Status received:", data.message); break;
-                default: break;
+                case 'clientId': break;
+                case 'all_tools_ready':
+                    toolsAreReady = true;
+                    tryEnablingInput();
+                    break;
+                case 'status':
+                    console.log("Status received:", data.message);
+                    break;
+                default:
+                    break;
             }
         }
 
-        // --- Input Enable/Disable ---
         function setInputEnabled(enabled) {
             console.log(`Setting input enabled: ${enabled}`);
             queryInput.disabled = !enabled;
             sendButton.disabled = !enabled;
             queryInput.placeholder = enabled ? "Message Claude..." : "Claude is thinking...";
+
             if (enabled) {
                 if (window.getComputedStyle(queryInput).display !== 'none') {
                     queryInput.focus();
@@ -775,119 +943,119 @@
 
         function tryEnablingInput() {
             console.log(`Trying to enable input. ClientId: ${!!clientId}, ToolsReady: ${toolsAreReady}, IndicatorVisible: ${!!thinkingIndicatorDiv}`);
+
             if (clientId && toolsAreReady && !thinkingIndicatorDiv && queryInput.disabled) {
-                 console.log(">>> Conditions met! Enabling input.");
-                 setInputEnabled(true);
+                console.log(">>> Conditions met! Enabling input.");
+                setInputEnabled(true);
             } else {
-                 if (!clientId) console.log("Waiting for clientId...");
-                 else if (!toolsAreReady) console.log("Waiting for tools status...");
-                 else if (thinkingIndicatorDiv) console.log("Waiting for current response...");
+                if (!clientId) console.log("Waiting for clientId...");
+                else if (!toolsAreReady) console.log("Waiting for tools status...");
+                else if (thinkingIndicatorDiv) console.log("Waiting for current response...");
             }
         }
 
-        // --- SSE Connection ---
         function connectSSE() {
-             clientId = null;
-             toolsAreReady = false;
-             removeThinkingIndicator();
-             currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
+            clientId = null;
+            toolsAreReady = false;
+            removeThinkingIndicator();
+            currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
 
-             if (eventSource && eventSource.readyState !== EventSource.CLOSED) {
-                 eventSource.close();
-             }
-             eventSource = null;
-             console.log("Attempting SSE connection...");
-             logEvent('client_status', { message: 'Attempting connection...' });
-             setInputEnabled(false);
+            if (eventSource && eventSource.readyState !== EventSource.CLOSED) {
+                eventSource.close();
+            }
 
-             try {
+            eventSource = null;
+            console.log("Attempting SSE connection...");
+            logEvent('client_status', { message: 'Attempting connection...' });
+            setInputEnabled(false);
+
+            try {
                 console.log(`Establishing SSE connection to ${SERVER_URL}/chat`);
-                 eventSource = new EventSource(`${SERVER_URL}/chat`);
+                eventSource = new EventSource(`${SERVER_URL}/chat`);
 
-                 eventSource.onopen = function (event) {
-                     console.log("SSE Connection Opened!");
-                     logEvent('client_status', { message: 'SSE connection opened.' });
-                 };
+                eventSource.onopen = function (event) {
+                    console.log("SSE Connection Opened!");
+                    logEvent('client_status', { message: 'SSE connection opened.' });
+                };
 
-                 // --- Specific Listener for Client ID ---
-                 eventSource.addEventListener('clientId', function (event) {
-                     // --- Debugging Lines ---
-                     console.log(">>> RAW 'clientId' event received. Data:", event.data);
-                     // --- End Debugging Lines ---
-                     try {
-                         const data = JSON.parse(event.data);
-                         // --- Debugging Lines ---
-                         console.log(">>> Parsed 'clientId' data:", data);
-                         // --- End Debugging Lines ---
-                         if (data.clientId && !clientId) {
-                             clientId = data.clientId;
-                             logEvent('clientId', data); // Log event (calls handleChatEvent which breaks)
-                             console.log(`>>> Client ID stored: ${clientId}`);
-                             tryEnablingInput(); // Attempt to enable input now
-                         } else {
-                              console.warn(">>> 'clientId' event ignored or already set.", { received: data.clientId, current: clientId });
-                         }
-                     } catch (e) {
-                         console.error(">>> FAILED to parse 'clientId' event data:", e);
-                         logEvent('parse_error', { event: 'clientId', rawData: event.data, error: e.message });
-                     }
-                 });
+                eventSource.addEventListener('clientId', function (event) {
+                    console.log(">>> RAW 'clientId' event received. Data:", event.data);
 
-                 // --- Generic Listeners for Other Types ---
-                 const eventTypes = ['status', 'all_tools_ready', 'text_chunk', 'error', 'end'];
-                 eventTypes.forEach(eventType => {
-                     // Skip clientId as it's handled above specifically
-                     if (eventType === 'clientId') return;
+                    try {
+                        const data = JSON.parse(event.data);
+                        console.log(">>> Parsed 'clientId' data:", data);
 
-                     eventSource.addEventListener(eventType, (event) => {
-                         try {
-                             const data = JSON.parse(event.data);
-                             logEvent(eventType, data); // Log first, handleChatEvent called within
-                         } catch (e) {
-                             logEvent('parse_error', { event: eventType, rawData: event.data, error: e.message });
-                             removeThinkingIndicator(); // Attempt cleanup even on parse error
-                         }
-                     });
-                 });
+                        if (data.clientId && !clientId) {
+                            clientId = data.clientId;
+                            logEvent('clientId', data);
+                            console.log(`>>> Client ID stored: ${clientId}`);
+                            tryEnablingInput();
+                        } else {
+                            console.warn(">>> 'clientId' event ignored or already set.", { received: data.clientId, current: clientId });
+                        }
+                    } catch (e) {
+                        console.error(">>> FAILED to parse 'clientId' event data:", e);
+                        logEvent('parse_error', { event: 'clientId', rawData: event.data, error: e.message });
+                    }
+                });
 
-                 eventSource.onmessage = function (event) { // Generic message handler
-                      console.warn("SSE received default message (no type):", event);
-                      try { logEvent('raw_message', JSON.parse(event.data)); }
-                      catch (e) { logEvent('raw_message', { rawData: event.data }); }
-                      removeThinkingIndicator(); // Assume response started
-                  };
+                const eventTypes = ['status', 'all_tools_ready', 'text_chunk', 'error', 'end'];
+                eventTypes.forEach(eventType => {
+                    if (eventType === 'clientId') return;
 
-                 eventSource.onerror = function (error) {
-                      console.error('SSE EventSource Error:', error);
-                      const message = eventSource.readyState === EventSource.CONNECTING ? 'Connection failed/closed. Retrying...' : 'SSE error. Retrying...';
-                      logEvent('client_status', { message: message, readyState: eventSource.readyState });
+                    eventSource.addEventListener(eventType, (event) => {
+                        try {
+                            const data = JSON.parse(event.data);
+                            logEvent(eventType, data);
+                        } catch (e) {
+                            logEvent('parse_error', { event: eventType, rawData: event.data, error: e.message });
+                            removeThinkingIndicator();
+                        }
+                    });
+                });
 
-                      if (eventSource) eventSource.close();
-                      eventSource = null;
-                      clientId = null;
-                      toolsAreReady = false;
-                      removeThinkingIndicator();
-                      currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
-                      setInputEnabled(false);
-                      setTimeout(connectSSE, 5000);
-                  };
+                eventSource.onmessage = function (event) {
+                    console.warn("SSE received default message (no type):", event);
+                    try {
+                        logEvent('raw_message', JSON.parse(event.data));
+                    } catch (e) {
+                        logEvent('raw_message', { rawData: event.data });
+                    }
+                    removeThinkingIndicator();
+                };
 
-             } catch (e) {
-                 console.error(`Failed to create EventSource: ${e.message}`);
-                 logEvent('client_error', { message: `Failed to create EventSource: ${e.message}`});
-                 addMessageToChat(`❌ Critical Error: Could not initiate connection to ${SERVER_URL}. Check console & server status. ${e.message}`, 'error');
-                 removeThinkingIndicator();
-                 currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
-                 setInputEnabled(false);
-             }
+                eventSource.onerror = function (error) {
+                    console.error('SSE EventSource Error:', error);
+                    const message = eventSource.readyState === EventSource.CONNECTING ?
+                        'Connection failed/closed. Retrying...' : 'SSE error. Retrying...';
+
+                    logEvent('client_status', { message: message, readyState: eventSource.readyState });
+
+                    if (eventSource) eventSource.close();
+                    eventSource = null;
+                    clientId = null;
+                    toolsAreReady = false;
+                    removeThinkingIndicator();
+                    currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
+                    setInputEnabled(false);
+                    setTimeout(connectSSE, 5000);
+                };
+
+            } catch (e) {
+                console.error(`Failed to create EventSource: ${e.message}`);
+                logEvent('client_error', { message: `Failed to create EventSource: ${e.message}` });
+                addMessageToChat(`❌ Critical Error: Could not initiate connection to ${SERVER_URL}. Check console & server status. ${e.message}`, 'error');
+                removeThinkingIndicator();
+                currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
+                setInputEnabled(false);
+            }
         }
 
-        // --- Sending Messages ---
         async function sendMessage() {
             const query = queryInput.value.trim();
             if (!query || sendButton.disabled) return;
 
-             currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
+            currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
             addMessageToChat(query, 'user');
             logEvent('user_query', { query });
             queryInput.value = '';
@@ -900,15 +1068,19 @@
             try {
                 const response = await fetch(`${SERVER_URL}/chat/${clientId}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query: query }),
                 });
 
                 let responseBody = {};
-                try { responseBody = await response.json(); }
-                catch(jsonError) {
-                    try { responseBody = { error: await response.text() }; }
-                    catch(textError){ responseBody = { error: "Failed to parse server response."}; }
+                try {
+                    responseBody = await response.json();
+                } catch (jsonError) {
+                    try {
+                        responseBody = { error: await response.text() };
+                    } catch (textError) {
+                        responseBody = { error: "Failed to parse server response." };
+                    }
                 }
 
                 if (!response.ok) {
@@ -917,26 +1089,37 @@
                     logEvent('send_error', { status: response.status, error: responseBody });
                     removeThinkingIndicator();
                     addMessageToChat(`❌ ${postErrorMsg}`, 'error');
-                    if(clientId && toolsAreReady) { setInputEnabled(true); }
+                    if (clientId && toolsAreReady) {
+                        setInputEnabled(true);
+                    }
                 } else {
                     console.log('POST Message accepted by server:', responseBody);
                 }
-
             } catch (error) {
                 const networkErrorMsg = `Network error sending message: ${error.message}. Please check your connection.`;
                 console.error('Network error sending message POST:', error);
                 logEvent('network_error', { message: networkErrorMsg });
                 removeThinkingIndicator();
                 addMessageToChat(`❌ ${networkErrorMsg}`, 'error');
-                if(clientId && toolsAreReady) { setInputEnabled(true); }
+                if (clientId && toolsAreReady) {
+                    setInputEnabled(true);
+                }
             } finally {
-                 if (!queryInput.disabled) { queryInput.focus(); }
+                if (!queryInput.disabled) {
+                    queryInput.focus();
+                }
             }
         }
 
         // --- Event Listeners ---
         sendButton.addEventListener('click', sendMessage);
-        queryInput.addEventListener('input', adjustTextareaHeight);
+
+        queryInput.addEventListener('input', function () {
+            adjustTextareaHeight();
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
         queryInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey && !sendButton.disabled) {
                 e.preventDefault();
@@ -945,30 +1128,40 @@
         });
 
         toggleSidebarButton.addEventListener('click', () => {
-            bodyElement.classList.toggle('sidebar-visible');
-            if (bodyElement.classList.contains('sidebar-visible')) {
-                 toggleSidebarButton.textContent = '✕';
-                 toggleSidebarButton.title = 'Hide Event Log';
-                 document.getElementById('eventLogContainer').scrollTop = document.getElementById('eventLogContainer').scrollHeight;
-            } else {
-                 toggleSidebarButton.textContent = '📄';
-                 toggleSidebarButton.title = 'Show Event Log';
-            }
+            bodyElement.classList.add('sidebar-visible');
+        });
+
+        closeSidebarButton.addEventListener('click', () => {
+            bodyElement.classList.remove('sidebar-visible');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            bodyElement.classList.remove('sidebar-visible');
         });
 
         // --- Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
             adjustTextareaHeight();
             connectSSE();
-            
+
             // Add greeting message
             setTimeout(() => {
                 if (clientId) {
                     const greetingDiv = addMessageToChat('', 'ai');
-                    greetingDiv.innerHTML = '<p>Hi! I\'m Claude. How can I help you today?</p>';
+                    greetingDiv.innerHTML = `
+                        <p>Hello! I'm Claude, your AI assistant. How can I help you today?</p>
+                        <p>Here are some things I can do:</p>
+                        <ul>
+                            <li>Answer your questions</li>
+                            <li>Help with coding problems</li>
+                            <li>Explain complex concepts</li>
+                            <li>And much more!</li>
+                        </ul>
+                    `;
                 }
             }, 1000);
         });
     </script>
 </body>
+
 </html>

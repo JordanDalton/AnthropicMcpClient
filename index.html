@@ -1,1167 +1,719 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <title>Claude AI</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude AI (Vue+Tailwind CDN)</title>
+
+    <!-- 1. Tailwind Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 2. Highlight.js CSS (Theme) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
-    <style>
-        :root {
-            /* DeepSeek-inspired Color Palette */
-            --bg-color: #f9fafb;
-            --sidebar-bg: #ffffff;
-            --main-bg: #ffffff;
-            --chat-history-bg: #ffffff;
-            --input-bg: #ffffff;
-            --message-user-bg: #f0f5ff;
-            /* Light blue for user messages */
-            --message-ai-bg: #ffffff;
-            /* White for AI messages */
-            --message-thinking-bg: #f8fafc;
-            --message-thinking-text: #64748b;
-            --text-color: #1a1a1a;
-            /* Dark gray for text */
-            --text-muted: #6b7280;
-            /* Muted gray for secondary text */
-            --border-color: #e5e7eb;
-            /* Light border color */
-            --accent-color: #2563eb;
-            /* DeepSeek blue */
-            --accent-hover-color: #1d4ed8;
-            /* Darker blue for hover states */
-            --disabled-color: #d1d5db;
-            /* Lighter gray for disabled elements */
-            --code-bg: #f8fafc;
-            --error-color: #ef4444;
-            --error-text-color: #b91c1c;
-            --error-bg-subtle: #fee2e2;
-            --toggle-btn-bg: #2563eb;
-            --toggle-btn-hover-bg: #1d4ed8;
 
-            /* Typography */
-            --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono', monospace;
-
-            /* Spacing & Sizing */
-            --border-radius-sm: 6px;
-            --border-radius-md: 8px;
-            --border-radius-lg: 12px;
-            --sidebar-width: 320px;
-            --container-max-width: 1200px;
-            --message-max-width: min(85%, 800px);
-            --message-spacing: 20px;
-            --section-spacing: 24px;
-
-            /* Shadows */
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-
-        @font-face {
-            font-family: 'Inter';
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2') format('woff2');
-        }
-
-        @font-face {
-            font-family: 'Inter';
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff2') format('woff2');
-        }
-
-        @font-face {
-            font-family: 'Inter';
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hiA.woff2') format('woff2');
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: var(--font-sans);
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-
-        /* Header */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 24px;
-            background-color: white;
-            border-bottom: 1px solid var(--border-color);
-            z-index: 10;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            font-size: 18px;
-            color: var(--text-color);
-            text-decoration: none;
-        }
-
-        .logo-icon {
-            width: 24px;
-            height: 24px;
-            background-color: var(--accent-color);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .header-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 6px 10px;
-            border-radius: var(--border-radius-md);
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-muted);
-            transition: all 0.2s ease;
-        }
-
-        .header-btn:hover {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-        }
-
-        .header-btn svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        /* Main Layout */
-        .main-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Sidebar */
-        #sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            position: absolute;
-            z-index: 20;
-            left: 0;
-            top: 0;
-            bottom: 0;
-        }
-
-        body.sidebar-visible #sidebar {
-            transform: translateX(0);
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .sidebar-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .sidebar-header h2 {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .close-sidebar {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--text-muted);
-            padding: 4px;
-        }
-
-        #eventLogContainer {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px 20px;
-        }
-
-        /* Chat Area */
-        #main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            overflow: hidden;
-            background-color: var(--main-bg);
-        }
-
-        #chatHistory {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-            scroll-behavior: smooth;
-        }
-
-        /* Messages */
-        .message-container {
-            display: flex;
-            flex-direction: column;
-            gap: var(--message-spacing);
-            max-width: var(--container-max-width);
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .message {
-            max-width: var(--message-max-width);
-            padding: 16px 20px;
-            border-radius: var(--border-radius-lg);
-            line-height: 1.7;
-            font-size: 16px;
-            position: relative;
-            word-wrap: break-word;
-            white-space: normal;
-        }
-
-        .message-user {
-            background-color: var(--message-user-bg);
-            align-self: flex-end;
-            border-bottom-right-radius: var(--border-radius-sm);
-            margin-left: auto;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .message-ai {
-            background-color: var(--message-ai-bg);
-            border: 1px solid var(--border-color);
-            align-self: flex-start;
-            border-bottom-left-radius: var(--border-radius-sm);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .message-error {
-            background-color: var(--error-bg-subtle);
-            color: var(--error-text-color);
-            border: 1px solid var(--error-color);
-            align-self: stretch;
-            max-width: 100%;
-            font-size: 15px;
-        }
-
-        .message-thinking {
-            background-color: var(--message-thinking-bg);
-            color: var(--message-thinking-text);
-            border: 1px solid var(--border-color);
-            align-self: flex-start;
-            border-bottom-left-radius: var(--border-radius-sm);
-            font-style: italic;
-        }
-
-        /* Input Area */
-        #inputArea {
-            padding: 16px 24px;
-            border-top: 1px solid var(--border-color);
-            background-color: var(--input-bg);
-            position: relative;
-        }
-
-        .input-container {
-            max-width: var(--container-max-width);
-            margin: 0 auto;
-            width: 100%;
-            display: flex;
-            gap: 12px;
-        }
-
-        #queryInput {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius-md);
-            font-family: var(--font-sans);
-            font-size: 16px;
-            line-height: 1.5;
-            background-color: white;
-            color: var(--text-color);
-            resize: none;
-            min-height: 56px;
-            max-height: 200px;
-            box-shadow: var(--shadow-sm);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        #queryInput:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        #queryInput::placeholder {
-            color: var(--text-muted);
-            opacity: 1;
-        }
-
-        #sendButton {
-            padding: 0 20px;
-            height: 56px;
-            border: none;
-            background-color: var(--accent-color);
-            color: white;
-            border-radius: var(--border-radius-md);
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            transition: background-color 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: var(--shadow-sm);
-        }
-
-        #sendButton:disabled {
-            background-color: var(--disabled-color);
-            color: var(--text-muted);
-            cursor: not-allowed;
-        }
-
-        #sendButton:not(:disabled):hover {
-            background-color: var(--accent-hover-color);
-        }
-
-        /* Code Styling */
-        .message code:not(pre code) {
-            font-family: var(--font-mono);
-            background-color: rgba(0, 0, 0, 0.05);
-            padding: 0.2em 0.4em;
-            border-radius: var(--border-radius-sm);
-            font-size: 0.9em;
-            color: #d6336c;
-        }
-
-        .message pre {
-            font-family: var(--font-mono);
-            background-color: var(--code-bg);
-            padding: 0;
-            border-radius: var(--border-radius-md);
-            border: 1px solid var(--border-color);
-            overflow-x: auto;
-            font-size: 14px;
-            line-height: 1.5;
-            margin: 1em 0;
-        }
-
-        .message pre code {
-            display: block;
-            padding: 1em;
-            background-color: transparent;
-        }
-
-        /* Markdown Elements */
-        .message-ai h1,
-        .message-ai h2,
-        .message-ai h3 {
-            margin-top: 1.2em;
-            margin-bottom: 0.6em;
-            line-height: 1.3;
-            font-weight: 600;
-        }
-
-        .message-ai h1 {
-            font-size: 1.5em;
-        }
-
-        .message-ai h2 {
-            font-size: 1.3em;
-        }
-
-        .message-ai h3 {
-            font-size: 1.15em;
-        }
-
-        .message-ai p {
-            margin-bottom: 0.75em;
-            /* Reduce paragraph spacing too */
-        }
-
-        .message-ai ul,
-        .message-ai ol {
-            margin-top: 0.5em;
-            margin-bottom: 0.5em;
-            padding-left: 1.5em;
-            /* Slightly reduced from 1.8em */
-        }
-
-        .message-ai li {
-            margin-bottom: 0.1em;
-            /* Much tighter spacing */
-            line-height: 1.4;
-            /* Slightly reduced line height */
-        }
-
-        .message-ai a {
-            color: var(--accent-color);
-            text-decoration: none;
-        }
-
-        .message-ai a:hover {
-            text-decoration: underline;
-        }
-
-        /* Event Log */
-        #eventLog {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        #eventLog li {
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        #eventLog li:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
-        .event-type {
-            font-weight: 500;
-            font-size: 14px;
-            color: var(--accent-color);
-            margin-bottom: 4px;
-            display: block;
-        }
-
-        .event-data {
-            font-family: var(--font-mono);
-            font-size: 13px;
-            background-color: var(--code-bg);
-            padding: 8px 12px;
-            border-radius: var(--border-radius-md);
-            border: 1px solid var(--border-color);
-            white-space: pre-wrap;
-            word-break: break-word;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        /* Animations */
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 0.6;
+    <!-- 3. Custom Tailwind Configuration (Optional but recommended) -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'chat-bg': '#f9fafb', // bg-gray-50
+              'sidebar-bg': '#ffffff', // bg-white
+              'main-bg': '#ffffff', // bg-white
+              'input-bg': '#ffffff', // bg-white
+              'message-user-bg': '#eff6ff', // bg-blue-50 (Adjusted for Tailwind palette)
+              'message-ai-bg': '#ffffff', // bg-white
+              'message-thinking-bg': '#f8fafc', // bg-slate-50
+              'message-thinking-text': '#64748b', // text-slate-500
+              'border-color': '#e5e7eb', // border-gray-200
+              'accent': '#2563eb', // bg-blue-600 text-blue-600 border-blue-600
+              'accent-hover': '#1d4ed8', // hover:bg-blue-700
+              'text-primary': '#1f2937', // text-gray-800 (Darker than original for better contrast)
+              'text-muted': '#6b7280', // text-gray-500
+              'code-bg': '#f8fafc', // bg-slate-50
+              'error-bg': '#fee2e2', // bg-red-100
+              'error-text': '#b91c1c', // text-red-700
+              'error-border': '#f87171', // border-red-400 (Adjusted)
+            },
+            fontFamily: {
+              sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+              mono: ['SFMono-Regular', 'ui-monospace', 'Menlo', 'Monaco', '"Cascadia Mono"', '"Segoe UI Mono"', '"Roboto Mono"', 'monospace'],
+            },
+            maxWidth: {
+             'message': 'min(85%, 800px)',
+             'container': '1200px',
+            },
+            keyframes: {
+                pulse: {
+                    '0%, 100%': { opacity: 0.6 },
+                    '50%': { opacity: 1 },
+                },
+                fadeIn: {
+                    'from': { opacity: 0, transform: 'translateY(5px)' },
+                    'to': { opacity: 1, transform: 'translateY(0)' },
+                }
+            },
+            animation: {
+                pulse: 'pulse 1.5s ease-in-out infinite',
+                'fade-in': 'fadeIn 0.3s ease-out',
             }
+          }
+        }
+      }
+    </script>
 
-            50% {
-                opacity: 1;
+    <!-- 4. Add Custom Base Styles (like scrollbars, fonts) if needed -->
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply font-sans bg-chat-bg text-text-primary antialiased;
             }
-        }
-
-        .message-thinking {
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message {
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        /* Scrollbars */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(0, 0, 0, 0.3);
-        }
-
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-            :root {
-                --message-max-width: 90%;
-                --message-spacing: 16px;
-            }
-
-            .header {
-                padding: 12px 16px;
-            }
-
+            /* Apply smooth scrolling */
             #chatHistory {
-                padding: 16px;
+                scroll-behavior: smooth;
+                overflow-anchor: none; /* Prevent jumping when content above viewport changes */
             }
-
-            #inputArea {
-                padding: 12px 16px;
+            .message-container {
+                overflow-anchor: auto; /* Allow elements inside to be anchors */
             }
-
-            .message {
-                padding: 12px 16px;
+            /* Custom scrollbar (optional, Tailwind plugins handle this better in build setups) */
+            ::-webkit-scrollbar {
+                width: 8px; @apply w-2; /* Example using Tailwind size */
+                height: 8px; @apply h-2;
             }
-
-            #queryInput {
-                min-height: 48px;
+            ::-webkit-scrollbar-track {
+                @apply bg-gray-100 rounded;
             }
-
-            #sendButton {
-                height: 48px;
+            ::-webkit-scrollbar-thumb {
+                 @apply bg-gray-400 rounded;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                 @apply bg-gray-500;
             }
         }
+        /* Styles for dynamically generated content (Markdown) */
+        @layer components {
+            .message-ai-content h1,
+            .message-ai-content h2,
+            .message-ai-content h3 {
+                 @apply mt-5 mb-2 leading-tight font-semibold;
+            }
+            .message-ai-content h1 { @apply text-2xl; }
+            .message-ai-content h2 { @apply text-xl; }
+            .message-ai-content h3 { @apply text-lg; }
+            .message-ai-content p { @apply mb-3; }
+            .message-ai-content ul,
+            .message-ai-content ol { @apply my-2 ml-5 space-y-1; } /* Adjusted spacing */
+            .message-ai-content ul { @apply list-disc; }
+            .message-ai-content ol { @apply list-decimal; }
+            /* Use ml-5 for indentation instead of pl-* inside li */
+            .message-ai-content li { @apply leading-snug; } /* Removed mb-1 for tighter lists */
+            .message-ai-content li > p { @apply mb-1; } /* Add margin back if paragraph inside li */
+            .message-ai-content li > ul,
+            .message-ai-content li > ol { @apply mt-1 ml-5; } /* Nested lists */
 
-        /* Overlay for sidebar on mobile */
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 15;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+            .message-ai-content a { @apply text-accent hover:underline; }
+            .message-ai-content code:not(pre *) { /* Inline code */
+                 @apply font-mono bg-gray-100 text-pink-600 text-sm px-1 py-0.5 rounded;
+            }
+            .message-ai-content pre { /* Code block container */
+                @apply font-mono bg-code-bg border border-border-color rounded-md text-sm leading-relaxed my-4 overflow-x-auto relative; /* Added relative for copy button */
+            }
+            .message-ai-content pre code { /* Code block content */
+                @apply block p-4 bg-transparent overflow-x-auto; /* Reset background for hljs themes */
+            }
+            /* Add styles for copy button inside pre */
+            .copy-button {
+                @apply absolute top-2 right-2 px-2 py-1 bg-gray-600 text-white text-xs rounded opacity-50 hover:opacity-100 transition-opacity cursor-pointer;
+            }
+            .copy-button-copied {
+                @apply bg-green-600;
+            }
         }
-
-        body.sidebar-visible .sidebar-overlay {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        /* Style to prevent FOUC (Flash Of Unstyled Content) */
+        [v-cloak] { display: none; }
     </style>
 </head>
+<body class="flex flex-col h-screen overflow-hidden">
 
-<body>
-    <!-- Header -->
-    <header class="header">
-        <a href="#" class="logo">
-            <span class="logo-icon">C</span>
-            <span>Claude AI</span>
-        </a>
-        <div class="header-actions">
-            <button id="toggleSidebarButton" class="header-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                <span>Event Log</span>
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <div class="main-container">
-        <!-- Sidebar Overlay (mobile) -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-        <!-- Sidebar -->
-        <div id="sidebar">
-            <div class="sidebar-header">
-                <h2>Event Log</h2>
-                <button class="close-sidebar" id="closeSidebarButton">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
+    <div id="app" class="flex flex-col h-full" v-cloak>
+        <!-- Header -->
+        <header class="flex items-center justify-between px-4 sm:px-6 py-3 bg-white border-b border-border-color z-10 flex-shrink-0">
+            <a href="#" class="flex items-center gap-2 text-lg font-semibold text-text-primary">
+                <span class="flex items-center justify-center w-6 h-6 bg-accent text-white rounded text-sm font-bold">C</span>
+                <span>Claude AI</span>
+            </a>
+            <div class="flex gap-3">
+                <button @click="toggleSidebar" class="flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary hover:bg-gray-100 px-2 py-1 rounded-md transition-colors">
+                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                     </svg>
+                    <span>Event Log</span>
                 </button>
             </div>
-            <div id="eventLogContainer">
-                <ul id="eventLog"></ul>
-            </div>
-        </div>
+        </header>
 
-        <!-- Main Chat Area -->
-        <div id="main">
-            <div id="chatHistory">
-                <div class="message-container" id="messageContainer">
-                    <!-- Messages will be inserted here -->
-                </div>
-            </div>
-            <div id="inputArea">
-                <div class="input-container">
-                    <textarea id="queryInput" placeholder="Message Claude..." rows="1" disabled></textarea>
-                    <button id="sendButton" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        <!-- Main Content Area -->
+        <div class="flex flex-1 overflow-hidden relative">
+            <!-- Sidebar Overlay (Mobile/Tablet) -->
+            <div v-if="isSidebarVisible" @click="closeSidebar" class="fixed inset-0 bg-black/50 z-10 lg:hidden transition-opacity duration-300"
+                 :class="{ 'opacity-100': isSidebarVisible, 'opacity-0': !isSidebarVisible }"></div>
+
+            <!-- Sidebar -->
+            <aside id="sidebar" class="absolute top-0 left-0 h-full w-72 lg:w-80 bg-sidebar-bg border-r border-border-color flex flex-col z-20
+                         transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0"
+                   :class="{ 'translate-x-0 shadow-lg': isSidebarVisible, '-translate-x-full': !isSidebarVisible && !isLargeScreen }">
+                <div class="flex items-center justify-between p-4 border-b border-border-color flex-shrink-0">
+                    <h2 class="text-base font-semibold">Event Log</h2>
+                    <button @click="closeSidebar" class="text-text-muted hover:text-text-primary lg:hidden">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
-            </div>
+                <div class="flex-1 overflow-y-auto p-4 space-y-4" id="eventLogContainer">
+                    <ul v-if="eventLog.length > 0" class="space-y-3">
+                        <li v-for="(event, index) in eventLog" :key="index" class="text-xs border-b border-border-color pb-3 last:border-b-0">
+                            <span class="font-medium text-accent block mb-1">{{ event.type }}:</span>
+                            <pre class="font-mono bg-code-bg p-2 rounded border border-border-color text-gray-700 whitespace-pre-wrap break-words max-h-40 overflow-y-auto">{{ formatEventData(event.data) }}</pre>
+                        </li>
+                    </ul>
+                    <p v-else class="text-sm text-text-muted italic text-center mt-4">No events yet.</p>
+                </div>
+            </aside>
+
+            <!-- Main Chat Area -->
+            <main class="flex-1 flex flex-col overflow-hidden bg-main-bg">
+                <!-- Chat History -->
+                <div id="chatHistory" ref="chatHistoryRef" class="flex-1 overflow-y-auto p-4 sm:p-6">
+                    <div class="max-w-container mx-auto space-y-4 message-container">
+                         <!-- Messages will be rendered here -->
+                         <div v-for="message in messages" :key="message.id"
+                              class="flex animate-fade-in"
+                              :class="{ 'justify-end': message.sender === 'user', 'justify-start': message.sender !== 'user' }">
+
+                             <div class="message max-w-message p-3 sm:p-4 rounded-lg shadow-sm relative"
+                                  :id="'message-' + message.id"
+                                  :class="{
+                                    'bg-message-user-bg text-text-primary rounded-br-sm': message.sender === 'user',
+                                    'bg-message-ai-bg text-text-primary border border-border-color rounded-bl-sm': message.sender === 'ai',
+                                    'bg-message-thinking-bg text-message-thinking-text border border-border-color animate-pulse italic text-sm': message.sender === 'thinking',
+                                    'bg-error-bg text-error-text border border-error-border w-full max-w-full text-sm': message.sender === 'error',
+                                  }">
+
+                                 <!-- AI Message (Rendered HTML) -->
+                                 <div v-if="message.sender === 'ai' && message.htmlContent" v-html="message.htmlContent" class="prose prose-sm max-w-none message-ai-content"></div>
+
+                                 <!-- User, Thinking, Error Messages (Plain Text) -->
+                                 <div v-else>{{ message.content }}</div>
+
+                                 <!-- Copy Button for AI Code Blocks (added dynamically later if needed, or integrated here) -->
+                             </div>
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-4 sm:p-6 border-t border-border-color bg-input-bg flex-shrink-0">
+                    <div class="max-w-container mx-auto flex items-end gap-3">
+                        <textarea
+                            ref="textareaRef"
+                            v-model="userInput"
+                            @input="adjustTextareaHeight"
+                            @keydown.enter.prevent.exact="sendMessage"
+                            :disabled="isInputDisabled"
+                            placeholder="Message Claude..."
+                            rows="1"
+                            class="flex-1 resize-none p-3 border border-border-color rounded-md shadow-sm focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-base bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            style="min-height: 44px; max-height: 200px; overflow-y: hidden;"
+                        ></textarea>
+                        <button
+                            @click="sendMessage"
+                            :disabled="isSendButtonDisabled || userInput.trim() === ''"
+                            class="h-[44px] px-4 sm:px-5 inline-flex items-center justify-center rounded-md bg-accent text-white font-medium shadow-sm hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                            >
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 
-    <!-- JavaScript Libraries -->
+    <!-- 5. JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <!-- 6. Vue 3 Global Build -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+    <!-- 7. Vue Application Logic -->
     <script>
-        // --- Global Variables ---
-        let clientId = null;
-        const eventLog = document.getElementById('eventLog');
-        const queryInput = document.getElementById('queryInput');
-        const sendButton = document.getElementById('sendButton');
-        const messageContainer = document.getElementById('messageContainer');
-        const SERVER_URL = 'http://localhost:3005';
-        let eventSource = null;
-        let toolsAreReady = false;
-        let thinkingIndicatorDiv = null;
-        const toggleSidebarButton = document.getElementById('toggleSidebarButton');
-        const closeSidebarButton = document.getElementById('closeSidebarButton');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const bodyElement = document.body;
+        const { createApp, ref, reactive, computed, onMounted, onUnmounted, nextTick } = Vue;
 
-        // --- State for current AI message processing ---
-        let currentAiMessageContext = {
-            mainDiv: null,
-            codeElement: null,
-            isInsideCodeBlock: false,
-            textBuffer: "",
-            markdownBuffer: "",
-        };
+        const app = createApp({
+            setup() {
+                // --- Configuration ---
+                const SERVER_URL = 'http://localhost:3005';
 
-        // --- Utility Functions ---
-        function escapeHtml(unsafe) {
-            if (typeof unsafe !== 'string') return unsafe;
-            return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
+                // --- State ---
+                const isSidebarVisible = ref(false);
+                const eventLog = reactive([]);
+                const messages = reactive([]); // { id: number, sender: 'user'|'ai'|'thinking'|'error', content: string, htmlContent?: string }
+                const clientId = ref(null);
+                const toolsAreReady = ref(false);
+                const isConnecting = ref(true); // Start as true until first connection attempt resolves
+                const isSending = ref(false); // Waiting for AI response stream
+                const userInput = ref('');
+                const currentAiMessage = reactive({ id: null, buffer: '', isComplete: false });
+                let messageIdCounter = 0;
+                let thinkingMessageId = null;
+                let eventSource = null;
 
-        function adjustTextareaHeight() {
-            queryInput.style.height = 'auto';
-            let scrollHeight = queryInput.scrollHeight;
-            const maxHeight = parseInt(window.getComputedStyle(queryInput).maxHeight, 10);
-            if (scrollHeight > maxHeight) {
-                queryInput.style.height = maxHeight + 'px';
-                queryInput.style.overflowY = 'auto';
-            } else {
-                queryInput.style.height = scrollHeight + 'px';
-                queryInput.style.overflowY = 'hidden';
-            }
-        }
+                // --- Refs for DOM Elements ---
+                const chatHistoryRef = ref(null);
+                const textareaRef = ref(null);
+                const isLargeScreen = ref(window.innerWidth >= 1024); // lg breakpoint
 
-        function scrollChatToBottom() {
-            requestAnimationFrame(() => {
-                const chatHistory = document.getElementById('chatHistory');
-                const isScrolledToBottom = chatHistory.scrollHeight - chatHistory.clientHeight <= chatHistory.scrollTop + 50;
-                if (isScrolledToBottom) {
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-                }
-            });
-        }
+                // --- Computed Properties ---
+                const isInputDisabled = computed(() => {
+                    return isConnecting.value || !clientId.value || !toolsAreReady.value || isSending.value;
+                });
 
-        function addMessageToChat(content, senderClass, optionalId = null) {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', `message-${senderClass}`);
+                const isSendButtonDisabled = computed(() => {
+                    return isInputDisabled.value || userInput.value.trim() === '';
+                });
 
-            if (senderClass !== 'ai') {
-                messageDiv.textContent = content;
-            }
-
-            if (optionalId) {
-                messageDiv.id = optionalId;
-            }
-
-            messageContainer.appendChild(messageDiv);
-            scrollChatToBottom();
-            return messageDiv;
-        }
-
-        function removeThinkingIndicator() {
-            if (thinkingIndicatorDiv) {
-                thinkingIndicatorDiv.remove();
-                thinkingIndicatorDiv = null;
-            }
-        }
-
-        function flushMarkdownBuffer() {
-            if (currentAiMessageContext.mainDiv && currentAiMessageContext.markdownBuffer.length > 0 && typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
-                console.log("Flushing Markdown Buffer:", currentAiMessageContext.markdownBuffer);
-                try {
-                    const rawHtml = marked.parse(currentAiMessageContext.markdownBuffer, { gfm: true });
-                    const cleanHtml = DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
-                    const tempContainer = document.createElement('div');
-                    tempContainer.innerHTML = cleanHtml;
-                    while (tempContainer.firstChild) {
-                        currentAiMessageContext.mainDiv.appendChild(tempContainer.firstChild);
-                    }
-                } catch (e) {
-                    console.error("Error parsing/sanitizing/appending buffered Markdown:", e);
-                    currentAiMessageContext.mainDiv.appendChild(document.createTextNode(currentAiMessageContext.markdownBuffer));
-                }
-                currentAiMessageContext.markdownBuffer = "";
-            } else if (currentAiMessageContext.markdownBuffer.length > 0) {
-                console.warn("Marked.js or DOMPurify not loaded during flush. Appending buffer as plain text.");
-                currentAiMessageContext.mainDiv.appendChild(document.createTextNode(currentAiMessageContext.markdownBuffer));
-                currentAiMessageContext.markdownBuffer = "";
-            }
-        }
-
-        function highlightCodeInElement(element) {
-            if (typeof hljs !== 'undefined' && element) {
-                const blocks = element.querySelectorAll('pre code');
-                if (blocks.length > 0) {
-                    console.log(`Highlighting ${blocks.length} code block(s)...`);
-                    blocks.forEach((block) => {
-                        if (!block.classList.contains('hljs')) {
-                            try {
-                                hljs.highlightElement(block);
-                            } catch (e) {
-                                console.error("Highlight.js error:", e);
-                            }
-                        }
-                    });
-                }
-            } else if (typeof hljs === 'undefined') {
-                console.warn("highlight.js not loaded.");
-            }
-        }
-
-        function processAndAppendChunk(textChunk) {
-            if (!currentAiMessageContext.mainDiv) {
-                currentAiMessageContext.mainDiv = addMessageToChat('', 'ai');
-                currentAiMessageContext.isInsideCodeBlock = false;
-                currentAiMessageContext.codeElement = null;
-                currentAiMessageContext.textBuffer = "";
-                currentAiMessageContext.markdownBuffer = "";
-            }
-
-            currentAiMessageContext.textBuffer += textChunk;
-            let processStartIndex = 0;
-
-            while (processStartIndex < currentAiMessageContext.textBuffer.length) {
-                const fence = '```';
-                const fenceIndex = currentAiMessageContext.textBuffer.indexOf(fence, processStartIndex);
-
-                if (fenceIndex === -1) {
-                    const remainingText = currentAiMessageContext.textBuffer.substring(processStartIndex);
-                    if (currentAiMessageContext.isInsideCodeBlock) {
-                        if (currentAiMessageContext.codeElement && remainingText.length > 0) {
-                            currentAiMessageContext.codeElement.appendChild(document.createTextNode(remainingText));
-                        }
+                // --- Methods ---
+                const checkScreenSize = () => {
+                    isLargeScreen.value = window.innerWidth >= 1024;
+                    // Keep sidebar visible on large screens if it was open, otherwise respect state
+                    if (isLargeScreen.value) {
+                        // On large screens, sidebar doesn't use the overlay logic
                     } else {
-                        currentAiMessageContext.markdownBuffer += remainingText;
+                        // On smaller screens, ensure it closes if not explicitly toggled
                     }
-                    processStartIndex = currentAiMessageContext.textBuffer.length;
-                    currentAiMessageContext.textBuffer = "";
-                } else {
-                    const textBeforeFence = currentAiMessageContext.textBuffer.substring(processStartIndex, fenceIndex);
-
-                    if (currentAiMessageContext.isInsideCodeBlock) {
-                        if (currentAiMessageContext.codeElement && textBeforeFence.length > 0) {
-                            currentAiMessageContext.codeElement.appendChild(document.createTextNode(textBeforeFence));
-                        }
-                    } else {
-                        currentAiMessageContext.markdownBuffer += textBeforeFence;
-                    }
-
-                    if (currentAiMessageContext.isInsideCodeBlock) {
-                        if (currentAiMessageContext.codeElement) {
-                            highlightCodeInElement(currentAiMessageContext.codeElement.parentElement);
-                        }
-                        currentAiMessageContext.isInsideCodeBlock = false;
-                        currentAiMessageContext.codeElement = null;
-                        processStartIndex = fenceIndex + fence.length;
-                    } else {
-                        flushMarkdownBuffer();
-                        currentAiMessageContext.isInsideCodeBlock = true;
-                        const openingFenceEndIndex = fenceIndex + fence.length;
-                        let languageStartIndex = openingFenceEndIndex;
-                        let language = 'plaintext';
-                        const lineBreakIndex = currentAiMessageContext.textBuffer.indexOf('\n', openingFenceEndIndex);
-                        let languageLineLength = 0;
-
-                        if (lineBreakIndex !== -1) {
-                            const langLine = currentAiMessageContext.textBuffer.substring(openingFenceEndIndex, lineBreakIndex).trim();
-                            if (langLine.length > 0 && !/\s/.test(langLine)) {
-                                language = escapeHtml(langLine.toLowerCase());
-                                languageLineLength = (lineBreakIndex + 1) - openingFenceEndIndex;
-                            }
-                        }
-
-                        const preElement = document.createElement('pre');
-                        currentAiMessageContext.codeElement = document.createElement('code');
-                        if (language && language !== 'plaintext') {
-                            currentAiMessageContext.codeElement.classList.add(`language-${language}`);
-                        }
-                        preElement.appendChild(currentAiMessageContext.codeElement);
-                        currentAiMessageContext.mainDiv.appendChild(preElement);
-                        processStartIndex = fenceIndex + fence.length + languageLineLength;
-                    }
-
-                    currentAiMessageContext.textBuffer = currentAiMessageContext.textBuffer.substring(processStartIndex);
-                    processStartIndex = 0;
-                }
-            }
-
-            scrollChatToBottom();
-        }
-
-        function logEvent(type, data) {
-            const item = document.createElement('li');
-            let dataString;
-
-            try {
-                dataString = (typeof data === 'object' && data !== null) ?
-                    JSON.stringify(data, null, 2) : String(data);
-            } catch (e) {
-                dataString = String(data);
-            }
-
-            const safeType = escapeHtml(type);
-            const safeDataString = escapeHtml(dataString);
-            const typeClass = `event-type ${safeType.toLowerCase().replace(/_/g, '-')}`;
-            item.innerHTML = `<span class="${typeClass}">${safeType}:</span><pre class="event-data">${safeDataString}</pre>`;
-            eventLog.appendChild(item);
-
-            if (bodyElement.classList.contains('sidebar-visible')) {
-                const logContainer = document.getElementById('eventLogContainer');
-                if (logContainer.scrollHeight - logContainer.scrollTop <= logContainer.clientHeight + 50) {
-                    logContainer.scrollTop = logContainer.scrollHeight;
-                }
-            }
-
-            handleChatEvent(type, data);
-        }
-
-        function handleChatEvent(type, data) {
-            if (['text_chunk', 'error', 'end'].includes(type)) {
-                removeThinkingIndicator();
-            }
-
-            switch (type) {
-                case 'text_chunk':
-                    processAndAppendChunk(data.text || '');
-                    break;
-                case 'end':
-                    flushMarkdownBuffer();
-                    currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
-                    if (clientId && queryInput.disabled) {
-                        setInputEnabled(true);
-                    }
-                    break;
-                case 'error':
-                    const errorMessage = `⚠️ Error: ${data?.message || 'Unknown server error'}`;
-                    addMessageToChat(errorMessage, 'error');
-                    flushMarkdownBuffer();
-                    currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
-                    if (clientId && queryInput.disabled) {
-                        setInputEnabled(true);
-                    }
-                    break;
-                case 'clientId': break;
-                case 'all_tools_ready':
-                    toolsAreReady = true;
-                    tryEnablingInput();
-                    break;
-                case 'status':
-                    console.log("Status received:", data.message);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        function setInputEnabled(enabled) {
-            console.log(`Setting input enabled: ${enabled}`);
-            queryInput.disabled = !enabled;
-            sendButton.disabled = !enabled;
-            queryInput.placeholder = enabled ? "Message Claude..." : "Claude is thinking...";
-
-            if (enabled) {
-                if (window.getComputedStyle(queryInput).display !== 'none') {
-                    queryInput.focus();
-                }
-                adjustTextareaHeight();
-            }
-        }
-
-        function tryEnablingInput() {
-            console.log(`Trying to enable input. ClientId: ${!!clientId}, ToolsReady: ${toolsAreReady}, IndicatorVisible: ${!!thinkingIndicatorDiv}`);
-
-            if (clientId && toolsAreReady && !thinkingIndicatorDiv && queryInput.disabled) {
-                console.log(">>> Conditions met! Enabling input.");
-                setInputEnabled(true);
-            } else {
-                if (!clientId) console.log("Waiting for clientId...");
-                else if (!toolsAreReady) console.log("Waiting for tools status...");
-                else if (thinkingIndicatorDiv) console.log("Waiting for current response...");
-            }
-        }
-
-        function connectSSE() {
-            clientId = null;
-            toolsAreReady = false;
-            removeThinkingIndicator();
-            currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
-
-            if (eventSource && eventSource.readyState !== EventSource.CLOSED) {
-                eventSource.close();
-            }
-
-            eventSource = null;
-            console.log("Attempting SSE connection...");
-            logEvent('client_status', { message: 'Attempting connection...' });
-            setInputEnabled(false);
-
-            try {
-                console.log(`Establishing SSE connection to ${SERVER_URL}/chat`);
-                eventSource = new EventSource(`${SERVER_URL}/chat`);
-
-                eventSource.onopen = function (event) {
-                    console.log("SSE Connection Opened!");
-                    logEvent('client_status', { message: 'SSE connection opened.' });
                 };
 
-                eventSource.addEventListener('clientId', function (event) {
-                    console.log(">>> RAW 'clientId' event received. Data:", event.data);
+                const toggleSidebar = () => {
+                    isSidebarVisible.value = !isSidebarVisible.value;
+                };
+
+                const closeSidebar = () => {
+                    isSidebarVisible.value = false;
+                };
+
+                const formatEventData = (data) => {
+                     try {
+                         return (typeof data === 'object' && data !== null) ?
+                            JSON.stringify(data, null, 2) : String(data);
+                     } catch (e) {
+                         return String(data); // Fallback for non-serializable data
+                     }
+                };
+
+                const scrollChatToBottom = () => {
+                    nextTick(() => {
+                        const container = chatHistoryRef.value;
+                        if (container) {
+                            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+                        }
+                    });
+                };
+
+                const addMessage = (sender, content, htmlContent = null) => {
+                    const id = messageIdCounter++;
+                    const newMessage = reactive({ id, sender, content, htmlContent }); // Make individual messages reactive if needed
+                    messages.push(newMessage);
+                    scrollChatToBottom();
+                    return id;
+                };
+
+                 const updateMessageContent = (id, newContent, newHtmlContent = null) => {
+                    const message = messages.find(m => m.id === id);
+                    if (message) {
+                        message.content = newContent;
+                        if (newHtmlContent !== null) {
+                            message.htmlContent = newHtmlContent;
+                            // Highlight AFTER the DOM updates
+                             if (message.sender === 'ai') { // Check if it's an AI message before highlighting
+                                nextTick(() => {
+                                    highlightCodeInMessage(id);
+                                });
+                            }
+                        }
+                    }
+                };
+
+                const highlightCodeInMessage = (messageId) => {
+                     const messageElement = document.getElementById(`message-${messageId}`);
+                     if (messageElement) {
+                         const blocks = messageElement.querySelectorAll('pre code:not(.hljs)'); // Only highlight un-highlighted blocks
+                         if (blocks.length > 0) {
+                             // console.log(`Highlighting ${blocks.length} block(s) in message ${messageId}`);
+                             blocks.forEach((block) => {
+                                 try {
+                                     // Add copy button before highlighting
+                                     addCopyButton(block.parentElement);
+                                     hljs.highlightElement(block);
+                                     block.classList.add('hljs'); // Mark as highlighted
+                                 } catch(e) {
+                                     console.error("Highlight.js error:", e);
+                                 }
+                             });
+                         }
+                     }
+                 };
+
+                // Function to add a copy button to a <pre> element
+                const addCopyButton = (preElement) => {
+                    if (!preElement || preElement.querySelector('.copy-button')) {
+                        return; // Don't add if already exists
+                    }
+                    const codeElement = preElement.querySelector('code');
+                    if (!codeElement) return;
+
+                    const button = document.createElement('button');
+                    button.textContent = 'Copy';
+                    button.classList.add('copy-button'); // Tailwind styles applied via @layer components
+
+                    button.addEventListener('click', () => {
+                        navigator.clipboard.writeText(codeElement.innerText).then(() => {
+                            button.textContent = 'Copied!';
+                            button.classList.add('copy-button-copied'); // Add success style
+                            setTimeout(() => {
+                                button.textContent = 'Copy';
+                                button.classList.remove('copy-button-copied');
+                            }, 2000);
+                        }).catch(err => {
+                            console.error('Failed to copy text: ', err);
+                            button.textContent = 'Error';
+                             setTimeout(() => { button.textContent = 'Copy'; }, 2000);
+                        });
+                    });
+
+                    preElement.appendChild(button);
+                };
+
+
+                const removeMessage = (id) => {
+                    const index = messages.findIndex(m => m.id === id);
+                    if (index !== -1) {
+                        messages.splice(index, 1);
+                    }
+                };
+
+                const removeThinkingIndicator = () => {
+                    if (thinkingMessageId !== null) {
+                        removeMessage(thinkingMessageId);
+                        thinkingMessageId = null;
+                    }
+                };
+
+                const processAndSanitizeMarkdown = (markdown) => {
+                     try {
+                         const rawHtml = marked.parse(markdown, { gfm: true, breaks: true });
+                         return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
+                     } catch (e) {
+                         console.error("Markdown processing error:", e);
+                         return markdown.replace(/</g, "<").replace(/>/g, ">"); // Basic escaping fallback
+                     }
+                 };
+
+                 const logEvent = (type, data) => {
+                     const timestamp = new Date().toISOString();
+                     // Clone data to avoid potential reactivity issues if original object is mutated elsewhere
+                     const clonedData = JSON.parse(JSON.stringify(data));
+                     eventLog.unshift({ type, data: clonedData, timestamp });
+                     console.log('logEvent:', type, data);
+                     handleChatEvent(type, data); // Process chat-related events
+                 };
+
+                const handleChatEvent = (type, data) => {
+                    // console.log('Handling chat event:', type, data);
+
+                    if (['text_chunk', 'end', 'error'].includes(type)) {
+                        removeThinkingIndicator();
+                        isSending.value = type !== 'end' && type !== 'error';
+                    }
+
+                    switch (type) {
+                        case 'clientId':
+                            clientId.value = data.clientId;
+                            isConnecting.value = false; // Got client ID, no longer in initial connecting state
+                            tryEnablingInput();
+                            break;
+                        case 'all_tools_ready':
+                            toolsAreReady.value = true;
+                            tryEnablingInput();
+                            if (messages.length === 0 && clientId.value) { // Add greeting only if connected and no messages yet
+                                const greetingHtml = processAndSanitizeMarkdown(
+                                    "Hello! I'm Claude (Vue+CDN). How can I help?\n\n*   Ask questions\n*   Get code help"
+                                );
+                                addMessage('ai', '', greetingHtml);
+                            }
+                            break;
+                        case 'text_chunk':
+                            if (currentAiMessage.id === null) {
+                                currentAiMessage.id = addMessage('ai', '');
+                                currentAiMessage.buffer = '';
+                                currentAiMessage.isComplete = false;
+                            }
+                            currentAiMessage.buffer += data.text || '';
+                            const htmlChunk = processAndSanitizeMarkdown(currentAiMessage.buffer);
+                            updateMessageContent(currentAiMessage.id, currentAiMessage.buffer, htmlChunk);
+                            scrollChatToBottom(); // Scroll as chunks arrive
+                            break;
+                        case 'end':
+                             if (currentAiMessage.id !== null) {
+                                currentAiMessage.isComplete = true;
+                                const finalHtml = processAndSanitizeMarkdown(currentAiMessage.buffer);
+                                updateMessageContent(currentAiMessage.id, currentAiMessage.buffer, finalHtml); // Final update & highlight trigger
+                             }
+                            currentAiMessage.id = null;
+                            currentAiMessage.buffer = '';
+                            currentAiMessage.isComplete = false;
+                            isSending.value = false;
+                            tryEnablingInput();
+                            break;
+                        case 'error':
+                            const errorMessage = `⚠️ Error: ${data?.message || data?.error || 'Unknown server error'}`;
+                            addMessage('error', errorMessage);
+                             if (currentAiMessage.id !== null) {
+                                // Optionally mark the incomplete message as errored
+                                updateMessageContent(currentAiMessage.id, currentAiMessage.buffer + "\n\n--- (Stream Error) ---");
+                            }
+                            currentAiMessage.id = null;
+                            currentAiMessage.buffer = '';
+                            currentAiMessage.isComplete = false;
+                            isSending.value = false;
+                            tryEnablingInput();
+                            break;
+                        case 'status':
+                             console.log("Status:", data.message);
+                             break;
+                    }
+                };
+
+                const tryEnablingInput = () => {
+                    // Logic is handled by computed property `isInputDisabled`
+                    // console.log(`Input enabled check: connecting=${isConnecting.value}, clientId=${!!clientId.value}, toolsReady=${toolsAreReady.value}, sending=${isSending.value}`);
+                };
+
+                const connectSSE = () => {
+                    if (eventSource && eventSource.readyState !== EventSource.CLOSED) {
+                        eventSource.close();
+                    }
+                    eventSource = null;
+                    // Don't reset clientId here, maybe the connection just dropped temporarily
+                    // clientId.value = null;
+                    toolsAreReady.value = false; // Assume tools need to reconfirm readiness
+                    isConnecting.value = true; // Actively trying to connect
+                    isSending.value = false;
+                    currentAiMessage.id = null;
+                    currentAiMessage.buffer = '';
+                    currentAiMessage.isComplete = false;
+
+                    logEvent('client_status', { message: 'Attempting SSE connection...' });
 
                     try {
-                        const data = JSON.parse(event.data);
-                        console.log(">>> Parsed 'clientId' data:", data);
+                        eventSource = new EventSource(`${SERVER_URL}/chat`);
 
-                        if (data.clientId && !clientId) {
-                            clientId = data.clientId;
-                            logEvent('clientId', data);
-                            console.log(`>>> Client ID stored: ${clientId}`);
+                        eventSource.onopen = () => {
+                            logEvent('client_status', { message: 'SSE connection opened.' });
+                            isConnecting.value = false;
+                            // Client ID and tools ready will be sent by the server event
+                        };
+
+                        eventSource.onerror = (error) => {
+                            console.error('SSE EventSource Error:', error);
+                            const message = eventSource.readyState === EventSource.CONNECTING
+                                ? 'Connection failed/closed. Retrying...'
+                                : 'SSE error occurred. Retrying...';
+                            logEvent('client_status', { message, readyState: eventSource.readyState });
+
+                            isConnecting.value = false; // No longer actively trying *this* attempt
+                            clientId.value = null; // Reset client ID on persistent error
+                            toolsAreReady.value = false;
+                            isSending.value = false;
+
+                            if (eventSource) eventSource.close();
+                            eventSource = null;
+
+                            removeThinkingIndicator();
+                            // Mark incomplete AI message if connection drops mid-stream
+                            if (currentAiMessage.id !== null && !currentAiMessage.isComplete) {
+                                updateMessageContent(currentAiMessage.id, currentAiMessage.buffer + "\n\n--- (Connection Lost) ---");
+                            }
+                            currentAiMessage.id = null;
+                            currentAiMessage.buffer = '';
+
+                            setTimeout(connectSSE, 5000); // Retry connection
+                        };
+
+                        eventSource.onmessage = (event) => {
+                            console.warn("SSE received default message (no type):", event.data);
+                            try { logEvent('raw_message', JSON.parse(event.data)); }
+                            catch (e) { logEvent('raw_message_parse_error', { rawData: event.data }); }
+                            removeThinkingIndicator();
+                            isSending.value = false;
+                            tryEnablingInput();
+                        };
+
+                        const eventTypes = ['clientId', 'status', 'all_tools_ready', 'text_chunk', 'error', 'end'];
+                        eventTypes.forEach(eventType => {
+                            eventSource.addEventListener(eventType, (event) => {
+                                try {
+                                    const data = JSON.parse(event.data);
+                                    logEvent(eventType, data);
+                                } catch (e) {
+                                    logEvent('parse_error', { event: eventType, rawData: event.data, error: e.message });
+                                    removeThinkingIndicator();
+                                    isSending.value = false;
+                                    tryEnablingInput();
+                                }
+                            });
+                        });
+
+                    } catch (e) {
+                         console.error(`Failed to create EventSource: ${e.message}`);
+                         logEvent('client_error', { message: `Failed to create EventSource: ${e.message}` });
+                         addMessage('error', `❌ Critical Error: Could not create EventSource. ${e.message}`);
+                         isConnecting.value = false;
+                         isSending.value = false;
+                         // Maybe try reconnecting later?
+                         // setTimeout(connectSSE, 10000);
+                    }
+                };
+
+                const sendMessage = async () => {
+                    const query = userInput.value.trim();
+                    if (!query || isInputDisabled.value) return;
+
+                    addMessage('user', query);
+                    logEvent('user_query', { query });
+                    userInput.value = ''; // Clear input
+                    adjustTextareaHeight(); // Reset height
+                    isSending.value = true; // Start waiting for response
+
+                    // Show thinking indicator immediately
+                    removeThinkingIndicator(); // Clear any previous one
+                    thinkingMessageId = addMessage('thinking', 'Claude is thinking...');
+                    scrollChatToBottom();
+
+                    // Reset current AI message tracking
+                    currentAiMessage.id = null;
+                    currentAiMessage.buffer = '';
+                    currentAiMessage.isComplete = false;
+
+                    try {
+                        const response = await fetch(`${SERVER_URL}/chat/${clientId.value}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ query: query }),
+                        });
+
+                        if (!response.ok) {
+                            let errorData = { message: `Server responded with status ${response.status}` };
+                            try {
+                                errorData = await response.json();
+                            } catch (e) { /* Ignore if response is not JSON */ }
+
+                            console.error('Error sending message POST:', response.status, errorData);
+                            logEvent('send_error', { status: response.status, error: errorData });
+                            removeThinkingIndicator();
+                            addMessage('error', `❌ Failed to send message: ${errorData.message || errorData.error || `HTTP ${response.status}`}`);
+                            isSending.value = false; // Stop sending state on error
                             tryEnablingInput();
                         } else {
-                            console.warn(">>> 'clientId' event ignored or already set.", { received: data.clientId, current: clientId });
+                            console.log('POST Message accepted by server');
+                            // Response will come via SSE, isSending remains true until 'end' or 'error' event
                         }
-                    } catch (e) {
-                        console.error(">>> FAILED to parse 'clientId' event data:", e);
-                        logEvent('parse_error', { event: 'clientId', rawData: event.data, error: e.message });
+                    } catch (error) {
+                        console.error('Network error sending message POST:', error);
+                        logEvent('network_error', { message: error.message });
+                        removeThinkingIndicator();
+                        addMessage('error', `❌ Network error: ${error.message}. Could not send message.`);
+                        isSending.value = false; // Stop sending state on error
+                        tryEnablingInput();
+                    } finally {
+                         // Focus input if it became enabled again
+                         nextTick(() => {
+                            if (!isInputDisabled.value && textareaRef.value) {
+                                textareaRef.value.focus();
+                            }
+                         });
                     }
-                });
-
-                const eventTypes = ['status', 'all_tools_ready', 'text_chunk', 'error', 'end'];
-                eventTypes.forEach(eventType => {
-                    if (eventType === 'clientId') return;
-
-                    eventSource.addEventListener(eventType, (event) => {
-                        try {
-                            const data = JSON.parse(event.data);
-                            logEvent(eventType, data);
-                        } catch (e) {
-                            logEvent('parse_error', { event: eventType, rawData: event.data, error: e.message });
-                            removeThinkingIndicator();
-                        }
-                    });
-                });
-
-                eventSource.onmessage = function (event) {
-                    console.warn("SSE received default message (no type):", event);
-                    try {
-                        logEvent('raw_message', JSON.parse(event.data));
-                    } catch (e) {
-                        logEvent('raw_message', { rawData: event.data });
-                    }
-                    removeThinkingIndicator();
                 };
 
-                eventSource.onerror = function (error) {
-                    console.error('SSE EventSource Error:', error);
-                    const message = eventSource.readyState === EventSource.CONNECTING ?
-                        'Connection failed/closed. Retrying...' : 'SSE error. Retrying...';
+                const adjustTextareaHeight = () => {
+                    const el = textareaRef.value;
+                    if (!el) return;
+                    el.style.height = 'auto'; // Temporarily shrink to get correct scrollHeight
+                    const scrollHeight = el.scrollHeight;
+                    const maxHeight = parseInt(window.getComputedStyle(el).maxHeight, 10);
 
-                    logEvent('client_status', { message: message, readyState: eventSource.readyState });
+                    if (scrollHeight > maxHeight) {
+                        el.style.height = maxHeight + 'px';
+                        el.style.overflowY = 'auto'; // Show scrollbar if max height reached
+                    } else {
+                        el.style.height = scrollHeight + 'px';
+                        el.style.overflowY = 'hidden'; // Hide scrollbar if below max height
+                    }
+                 };
 
-                    if (eventSource) eventSource.close();
-                    eventSource = null;
-                    clientId = null;
-                    toolsAreReady = false;
-                    removeThinkingIndicator();
-                    currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
-                    setInputEnabled(false);
-                    setTimeout(connectSSE, 5000);
-                };
 
-            } catch (e) {
-                console.error(`Failed to create EventSource: ${e.message}`);
-                logEvent('client_error', { message: `Failed to create EventSource: ${e.message}` });
-                addMessageToChat(`❌ Critical Error: Could not initiate connection to ${SERVER_URL}. Check console & server status. ${e.message}`, 'error');
-                removeThinkingIndicator();
-                currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
-                setInputEnabled(false);
-            }
-        }
-
-        async function sendMessage() {
-            const query = queryInput.value.trim();
-            if (!query || sendButton.disabled) return;
-
-            currentAiMessageContext = { mainDiv: null, codeElement: null, isInsideCodeBlock: false, textBuffer: "", markdownBuffer: "" };
-            addMessageToChat(query, 'user');
-            logEvent('user_query', { query });
-            queryInput.value = '';
-            adjustTextareaHeight();
-            setInputEnabled(false);
-
-            removeThinkingIndicator();
-            thinkingIndicatorDiv = addMessageToChat('Claude is thinking...', 'thinking');
-
-            try {
-                const response = await fetch(`${SERVER_URL}/chat/${clientId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: query }),
+                // --- Lifecycle Hooks ---
+                onMounted(() => {
+                    // Initial connection
+                    connectSSE();
+                    // Highlight any initial code (like in a potential greeting message)
+                    // hljs.highlightAll(); // Or use more targeted highlighting if needed
+                    // Responsive sidebar handling
+                    window.addEventListener('resize', checkScreenSize);
+                    checkScreenSize(); // Initial check
+                    // Adjust textarea on load if it has initial content (unlikely here)
+                    adjustTextareaHeight();
                 });
 
-                let responseBody = {};
-                try {
-                    responseBody = await response.json();
-                } catch (jsonError) {
-                    try {
-                        responseBody = { error: await response.text() };
-                    } catch (textError) {
-                        responseBody = { error: "Failed to parse server response." };
+                onUnmounted(() => {
+                    if (eventSource) {
+                        eventSource.close();
+                        logEvent('client_status', { message: 'SSE connection closed on unmount.' });
                     }
-                }
+                    window.removeEventListener('resize', checkScreenSize);
+                });
 
-                if (!response.ok) {
-                    const postErrorMsg = `Failed to send message (HTTP ${response.status}): ${responseBody.error || 'Server returned an error.'}`;
-                    console.error('Error sending message POST:', response.status, responseBody);
-                    logEvent('send_error', { status: response.status, error: responseBody });
-                    removeThinkingIndicator();
-                    addMessageToChat(`❌ ${postErrorMsg}`, 'error');
-                    if (clientId && toolsAreReady) {
-                        setInputEnabled(true);
-                    }
-                } else {
-                    console.log('POST Message accepted by server:', responseBody);
-                }
-            } catch (error) {
-                const networkErrorMsg = `Network error sending message: ${error.message}. Please check your connection.`;
-                console.error('Network error sending message POST:', error);
-                logEvent('network_error', { message: networkErrorMsg });
-                removeThinkingIndicator();
-                addMessageToChat(`❌ ${networkErrorMsg}`, 'error');
-                if (clientId && toolsAreReady) {
-                    setInputEnabled(true);
-                }
-            } finally {
-                if (!queryInput.disabled) {
-                    queryInput.focus();
-                }
-            }
-        }
+                // --- Return values for template ---
+                return {
+                    isSidebarVisible,
+                    eventLog,
+                    messages,
+                    clientId, // For potential display/debug
+                    isConnecting,
+                    isSending,
+                    userInput,
+                    isInputDisabled,
+                    isSendButtonDisabled,
+                    isLargeScreen,
 
-        // --- Event Listeners ---
-        sendButton.addEventListener('click', sendMessage);
+                    chatHistoryRef, // Ref for scrolling
+                    textareaRef,    // Ref for height adjustment
 
-        queryInput.addEventListener('input', function () {
-            adjustTextareaHeight();
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
-
-        queryInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey && !sendButton.disabled) {
-                e.preventDefault();
-                sendMessage();
+                    toggleSidebar,
+                    closeSidebar,
+                    formatEventData,
+                    sendMessage,
+                    adjustTextareaHeight,
+                };
             }
         });
 
-        toggleSidebarButton.addEventListener('click', () => {
-            bodyElement.classList.add('sidebar-visible');
-        });
+        app.mount('#app');
 
-        closeSidebarButton.addEventListener('click', () => {
-            bodyElement.classList.remove('sidebar-visible');
-        });
-
-        sidebarOverlay.addEventListener('click', () => {
-            bodyElement.classList.remove('sidebar-visible');
-        });
-
-        // --- Initial Setup ---
-        document.addEventListener('DOMContentLoaded', () => {
-            adjustTextareaHeight();
-            connectSSE();
-
-            // Add greeting message
-            setTimeout(() => {
-                if (clientId) {
-                    const greetingDiv = addMessageToChat('', 'ai');
-                    greetingDiv.innerHTML = `
-                        <p>Hello! I'm Claude, your AI assistant. How can I help you today?</p>
-                        <p>Here are some things I can do:</p>
-                        <ul>
-                            <li>Answer your questions</li>
-                            <li>Help with coding problems</li>
-                            <li>Explain complex concepts</li>
-                            <li>And much more!</li>
-                        </ul>
-                    `;
-                }
-            }, 1000);
-        });
     </script>
 </body>
-
 </html>

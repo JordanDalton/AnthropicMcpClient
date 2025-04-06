@@ -160,7 +160,7 @@
                  :class="{ 'opacity-100': isSidebarVisible, 'opacity-0': !isSidebarVisible }"></div>
 
             <!-- Sidebar -->
-            <aside id="sidebar" class="absolute top-0 left-0 h-full w-72 lg:w-80 bg-sidebar-bg border-r border-border-color flex flex-col z-20
+            <aside v-if="isSidebarVisible" id="sidebar" class="absolute top-0 left-0 h-full w-72 lg:w-80 bg-sidebar-bg border-r border-border-color flex flex-col z-20
                          transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0"
                    :class="{ 'translate-x-0 shadow-lg': isSidebarVisible, '-translate-x-full': !isSidebarVisible && !isLargeScreen }">
                 <div class="flex items-center justify-between p-4 border-b border-border-color flex-shrink-0">

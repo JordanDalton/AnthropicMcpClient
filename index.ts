@@ -582,7 +582,7 @@ async function main() {
         process.exit(1);
     }
 
-    const systemPrompt = "You are a helpful AI assistant using the Model Context Protocol (MCP) to interact with external tools. When you need to use multiple tools to answer a question, request all of them in a single turn. I will execute them and provide all results back to you. Use the available tools when necessary to fulfill user requests. Be clear and concise in your responses. If a tool fails, report the error clearly based on the information provided.";
+    const systemPrompt = " assistant using the Model Context Protocol (MCP) to interact with external tools. When you need to use multiple tools to answer a question, request all of them in a single turn. I will execute them and provide all results back to you. Use the available tools when necessary to fulfill user requests. Be clear and concise in your responses. If a tool fails, report the error clearly based on the information provided.";
     mcpClient = new MCPClient(systemPrompt);
 
     console.log("\nAttempting to connect to configured servers...");
